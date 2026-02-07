@@ -2,14 +2,44 @@ import React from "react";
 import { useVaultStore } from "../stores/vaultStore";
 import { useEditorStore } from "../stores/editorStore";
 import { useGitStore } from "../stores/gitStore";
+import { setRootHandle } from "../lib/api";
 
 export function StatusBar() {
   const vault = useVaultStore((s) => s.vault);
+  const closeVault = useVaultStore((s) => s.closeVault);
+  const openVault = useVaultStore((s) => s.openVault);
   const activeTabPath = useEditorStore((s) => s.activeTabPath);
   const isDirty = useEditorStore((s) => s.isDirty);
   const wordCount = useEditorStore((s) => s.wordCount);
   const currentBranch = useGitStore((s) => s.currentBranch);
   const modifiedCount = useGitStore((s) => s.modifiedCount);
+
+  const handleSwitchVault = async () => {
+    try {
+      const handle = await (window as any).showDirectoryPicker({ mode: "readwrite" });
+      // Save any dirty file first
+      if (useEditorStore.getState().isDirty) {
+        await useEditorStore.getState().saveFile();
+      }
+      // Close current vault cleanly
+      useEditorStore.getState().closeAllTabs();
+      closeVault();
+      // Open new vault
+      setRootHandle(handle);
+      openVault(handle.name);
+    } catch (e: any) {
+      if (e.name === "AbortError") return;
+      console.error("Failed to switch vault:", e);
+    }
+  };
+
+  const handleCloseVault = () => {
+    if (useEditorStore.getState().isDirty) {
+      useEditorStore.getState().saveFile();
+    }
+    useEditorStore.getState().closeAllTabs();
+    closeVault();
+  };
 
   // Format the path for display
   const displayPath = activeTabPath
@@ -18,6 +48,25 @@ export function StatusBar() {
 
   return (
     <div className="status-bar">
+      <div className="status-bar-item vault-switcher">
+        <span
+          className="vault-name"
+          title="Switch vault"
+          onClick={handleSwitchVault}
+          role="button"
+          tabIndex={0}
+        >
+          📂 {vault?.path ?? "No vault"}
+        </span>
+        <button
+          className="vault-close-btn"
+          onClick={handleCloseVault}
+          title="Close vault"
+        >
+          ✕
+        </button>
+      </div>
+
       {vault?.is_git_repo && currentBranch && (
         <div className="status-bar-item">
           <span>⎇</span>

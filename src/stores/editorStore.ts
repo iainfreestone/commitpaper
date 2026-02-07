@@ -10,6 +10,7 @@ interface EditorStore {
 
   openFile: (path: string) => Promise<void>;
   closeTab: (path: string, force?: boolean) => void;
+  closeAllTabs: () => void;
   setActiveTab: (path: string) => void;
   setContent: (content: string) => void;
   setWordCount: (count: number) => void;
@@ -91,6 +92,16 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
         isDirty: false,
       });
     }
+  },
+
+  closeAllTabs: () => {
+    set({
+      openTabs: [],
+      activeTabPath: null,
+      content: "",
+      isDirty: false,
+      wordCount: 0,
+    });
   },
 
   setActiveTab: (path: string) => {

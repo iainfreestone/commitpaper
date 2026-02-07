@@ -9,6 +9,7 @@ interface VaultStore {
   error: string | null;
 
   openVault: (path: string) => Promise<void>;
+  closeVault: () => void;
   refreshFileTree: () => Promise<void>;
 }
 
@@ -27,6 +28,11 @@ export const useVaultStore = create<VaultStore>((set, get) => ({
     } catch (e) {
       set({ error: String(e), isLoading: false });
     }
+  },
+
+  closeVault: () => {
+    api.stopFileWatching();
+    set({ vault: null, fileTree: [], error: null });
   },
 
   refreshFileTree: async () => {

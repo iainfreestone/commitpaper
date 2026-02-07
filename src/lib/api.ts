@@ -102,6 +102,108 @@ export interface SearchResult {
 let rootHandle: FileSystemDirectoryHandle | null = null;
 let vaultConfig: VaultConfig | null = null;
 
+// ============================================================
+// IndexedDB persistence for vault handles
+// ============================================================
+
+const DB_NAME = "commitpaper";
+const DB_VERSION = 1;
+const STORE_NAME = "vault-handles";
+
+function openDB(): Promise<IDBDatabase> {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(DB_NAME, DB_VERSION);
+    req.onupgradeneeded = () => {
+      const db = req.result;
+      if (!db.objectStoreNames.contains(STORE_NAME)) {
+        db.createObjectStore(STORE_NAME);
+      }
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+/** Persist the last-opened directory handle so we can restore it on next visit */
+export async function persistVaultHandle(handle: FileSystemDirectoryHandle): Promise<void> {
+  try {
+    const db = await openDB();
+    const tx = db.transaction(STORE_NAME, "readwrite");
+    tx.objectStore(STORE_NAME).put(handle, "last-vault");
+    // Also maintain a recent list (up to 5)
+    const getReq = tx.objectStore(STORE_NAME).get("recent-vaults");
+    getReq.onsuccess = () => {
+      const recent: { name: string; handle: FileSystemDirectoryHandle }[] = getReq.result || [];
+      // Remove if already in list
+      const filtered = recent.filter((r) => r.name !== handle.name);
+      filtered.unshift({ name: handle.name, handle });
+      // Keep max 5
+      const trimmed = filtered.slice(0, 5);
+      tx.objectStore(STORE_NAME).put(trimmed, "recent-vaults");
+    };
+    db.close();
+  } catch (e) {
+    console.warn("Failed to persist vault handle:", e);
+  }
+}
+
+/** Try to restore the last-opened directory handle */
+export async function restoreVaultHandle(): Promise<FileSystemDirectoryHandle | null> {
+  try {
+    const db = await openDB();
+    return new Promise((resolve) => {
+      const tx = db.transaction(STORE_NAME, "readonly");
+      const req = tx.objectStore(STORE_NAME).get("last-vault");
+      req.onsuccess = () => {
+        db.close();
+        resolve(req.result || null);
+      };
+      req.onerror = () => {
+        db.close();
+        resolve(null);
+      };
+    });
+  } catch {
+    return null;
+  }
+}
+
+/** Get the list of recently opened vault handles */
+export async function getRecentVaults(): Promise<{ name: string; handle: FileSystemDirectoryHandle }[]> {
+  try {
+    const db = await openDB();
+    return new Promise((resolve) => {
+      const tx = db.transaction(STORE_NAME, "readonly");
+      const req = tx.objectStore(STORE_NAME).get("recent-vaults");
+      req.onsuccess = () => {
+        db.close();
+        resolve(req.result || []);
+      };
+      req.onerror = () => {
+        db.close();
+        resolve([]);
+      };
+    });
+  } catch {
+    return [];
+  }
+}
+
+/** Verify we still have permission (or re-request it) */
+export async function verifyPermission(handle: FileSystemDirectoryHandle): Promise<boolean> {
+  try {
+    if ((await handle.queryPermission({ mode: "readwrite" })) === "granted") {
+      return true;
+    }
+    if ((await handle.requestPermission({ mode: "readwrite" })) === "granted") {
+      return true;
+    }
+    return false;
+  } catch {
+    return false;
+  }
+}
+
 // In-memory note index for wikilinks, backlinks, graph
 interface NoteEntry {
   path: string;
@@ -187,6 +289,7 @@ export async function openVault(path: string): Promise<VaultConfig> {
 
 export function setRootHandle(handle: FileSystemDirectoryHandle) {
   rootHandle = handle;
+  persistVaultHandle(handle);
 }
 
 async function rebuildNoteIndex() {

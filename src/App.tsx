@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useVaultStore } from "./stores/vaultStore";
 import { useEditorStore } from "./stores/editorStore";
 import { useGitStore } from "./stores/gitStore";
@@ -9,7 +9,7 @@ import { RightPanel } from "./components/RightPanel/RightPanel";
 import { StatusBar } from "./components/StatusBar";
 import { CommandPalette } from "./components/CommandPalette";
 import { openTodayNote } from "./components/Sidebar/DailyNotes";
-import { resolveWikilink, startFileWatching, stopFileWatching } from "./lib/api";
+import { resolveWikilink, startFileWatching, stopFileWatching, restoreVaultHandle, verifyPermission, setRootHandle } from "./lib/api";
 
 export default function App() {
   const vault = useVaultStore((s) => s.vault);
@@ -18,6 +18,29 @@ export default function App() {
   const saveFile = useEditorStore((s) => s.saveFile);
   const [showCommandPalette, setShowCommandPalette] = React.useState(false);
   const [showRightPanel, setShowRightPanel] = React.useState(true);
+  const [restoringVault, setRestoringVault] = useState(true);
+
+  // Try to auto-restore the last opened vault on mount
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const handle = await restoreVaultHandle();
+        if (cancelled || !handle) { setRestoringVault(false); return; }
+        const granted = await verifyPermission(handle);
+        if (cancelled) return;
+        if (granted) {
+          setRootHandle(handle);
+          await useVaultStore.getState().openVault(handle.name);
+        }
+      } catch {
+        // Silently fall through to WelcomeScreen
+      } finally {
+        if (!cancelled) setRestoringVault(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
   // File watching via polling
   useEffect(() => {
@@ -81,6 +104,16 @@ export default function App() {
     window.addEventListener("beforeunload", handler);
     return () => window.removeEventListener("beforeunload", handler);
   }, []);
+
+  if (restoringVault) {
+    return (
+      <div className="welcome-screen">
+        <div className="welcome-inner">
+          <p style={{ opacity: 0.6 }}>Restoring vault…</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!vault) {
     return <WelcomeScreen />;
