@@ -5,11 +5,7 @@ import {
   autocompletion,
 } from "@codemirror/autocomplete";
 import { EditorView } from "@codemirror/view";
-import * as api from "../../../lib/tauri";
-
-// ──────────────────────────────────────────────
-// Wikilink autocomplete: [[  triggers note name suggestions
-// ──────────────────────────────────────────────
+import * as api from "../../../lib/api";
 
 let cachedNames: string[] = [];
 let lastFetch = 0;
@@ -30,21 +26,17 @@ async function fetchNoteNames(): Promise<string[]> {
 async function wikilinkCompletions(
   ctx: CompletionContext,
 ): Promise<CompletionResult | null> {
-  // Look backward from cursor to find [[
   const line = ctx.state.doc.lineAt(ctx.pos);
   const textBefore = line.text.slice(0, ctx.pos - line.from);
 
-  // Find the last [[ that isn't closed
   const lastOpen = textBefore.lastIndexOf("[[");
   if (lastOpen === -1) return null;
 
-  // Make sure it's not already closed
   const afterOpen = textBefore.slice(lastOpen + 2);
   if (afterOpen.includes("]]")) return null;
 
-  // Get the typed filter text (everything after [[)
   const from = line.from + lastOpen + 2;
-  const filter = afterOpen.split("|")[0]; // handle [[target|display
+  const filter = afterOpen.split("|")[0];
 
   const names = await fetchNoteNames();
 
@@ -52,7 +44,6 @@ async function wikilinkCompletions(
     label: name,
     type: "text",
     apply: (view, completion, from, to) => {
-      // Insert the name and closing ]]
       const textAfter = view.state.doc.sliceString(
         to,
         Math.min(to + 2, view.state.doc.length),
@@ -105,7 +96,6 @@ export const wikilinkAutocompleteTheme = EditorView.baseTheme({
   },
 });
 
-// Invalidate cache so new notes show up immediately
 export function invalidateNoteNameCache() {
   lastFetch = 0;
   cachedNames = [];

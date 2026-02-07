@@ -41,7 +41,7 @@ import { calloutPlugin, calloutTheme } from "./extensions/callouts";
 import { mathPlugin, mathTheme } from "./extensions/mathRendering";
 import { mermaidPlugin, mermaidTheme } from "./extensions/mermaidRendering";
 import { embedPlugin, embedTheme } from "./extensions/noteEmbed";
-import { saveBinaryFile } from "../../lib/tauri";
+import { saveBinaryFile } from "../../lib/api";
 
 interface EditorProps {
   content: string;
@@ -62,13 +62,11 @@ export function Editor({ content, filePath }: EditorProps) {
       if (update.docChanged) {
         const text = update.state.doc.toString();
         setContent(text);
-        // Update word count
         const words = text.trim() ? text.trim().split(/\s+/).length : 0;
         setWordCount(words);
       }
     });
 
-    // Save on Ctrl+S
     const saveKeymap = keymap.of([
       {
         key: "Mod-s",
@@ -94,36 +92,25 @@ export function Editor({ content, filePath }: EditorProps) {
         markdown({ base: markdownLanguage }),
         syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
         oneDark,
-        // Wikilinks
         wikilinkPlugin,
         wikilinkTheme,
-        // Live preview (inline WYSIWYG)
         livePreviewPlugin,
         livePreviewTheme,
-        // Wikilink autocomplete ([[)
         wikilinkAutocomplete,
         wikilinkAutocompleteTheme,
-        // Hover preview on wikilinks
         wikilinkHoverPreview,
         hoverPreviewTheme,
-        // Interactive checkboxes
         checkboxPlugin,
         checkboxTheme,
-        // Auto-bracket pairing for [[
         autoBracketKeymap,
-        // Callouts / admonitions
         calloutPlugin,
         calloutTheme,
-        // KaTeX math rendering
         mathPlugin,
         mathTheme,
-        // Mermaid diagrams
         mermaidPlugin,
         mermaidTheme,
-        // Note embedding (![[note]])
         embedPlugin,
         embedTheme,
-        // Keymaps
         saveKeymap,
         keymap.of([
           ...defaultKeymap,
@@ -144,11 +131,9 @@ export function Editor({ content, filePath }: EditorProps) {
 
     viewRef.current = view;
 
-    // Initial word count
     const words = content.trim() ? content.trim().split(/\s+/).length : 0;
     setWordCount(words);
 
-    // Listen for outline "go to line" events
     const handleGotoLine = (e: Event) => {
       const detail = (e as CustomEvent).detail;
       if (detail?.line && viewRef.current) {
@@ -164,7 +149,6 @@ export function Editor({ content, filePath }: EditorProps) {
     };
     window.addEventListener("editor-goto-line", handleGotoLine);
 
-    // Listen for "set content" events (from Properties panel)
     const handleSetContent = (e: Event) => {
       const detail = (e as CustomEvent).detail;
       if (detail?.content != null && viewRef.current) {
@@ -179,7 +163,6 @@ export function Editor({ content, filePath }: EditorProps) {
     };
     window.addEventListener("editor-set-content", handleSetContent);
 
-    // Listen for "insert template" events
     const handleInsertTemplate = (e: Event) => {
       const detail = (e as CustomEvent).detail;
       if (detail?.content && viewRef.current) {
@@ -232,7 +215,7 @@ export function Editor({ content, filePath }: EditorProps) {
       containerRef.current?.removeEventListener("paste", handlePaste);
       view.destroy();
     };
-  }, [filePath]); // Re-create editor when file changes
+  }, [filePath]);
 
   return <div ref={containerRef} style={{ height: "100%" }} />;
 }

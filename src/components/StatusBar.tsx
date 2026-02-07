@@ -9,10 +9,7 @@ export function StatusBar() {
   const isDirty = useEditorStore((s) => s.isDirty);
   const wordCount = useEditorStore((s) => s.wordCount);
   const currentBranch = useGitStore((s) => s.currentBranch);
-  const status = useGitStore((s) => s.status);
-
-  const changedCount = status.filter((f) => !f.staged).length;
-  const stagedCount = status.filter((f) => f.staged).length;
+  const modifiedCount = useGitStore((s) => s.modifiedCount);
 
   // Format the path for display
   const displayPath = activeTabPath
@@ -28,16 +25,9 @@ export function StatusBar() {
         </div>
       )}
 
-      {status.length > 0 && (
+      {modifiedCount > 0 && (
         <div className="status-bar-item">
-          {changedCount > 0 && (
-            <span style={{ color: "var(--yellow)" }}>●{changedCount}</span>
-          )}
-          {stagedCount > 0 && (
-            <span style={{ color: "var(--green)", marginLeft: "4px" }}>
-              ✓{stagedCount}
-            </span>
-          )}
+          <span style={{ color: "var(--yellow)" }}>●{modifiedCount} modified</span>
         </div>
       )}
 
@@ -57,7 +47,7 @@ export function StatusBar() {
             {displayPath}
           </div>
         )}
-        <div className="status-bar-item">Gitsidian</div>
+        <div className="status-bar-item">Gitsidian Web</div>
       </div>
     </div>
   );

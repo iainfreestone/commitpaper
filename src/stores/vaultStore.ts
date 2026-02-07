@@ -1,6 +1,6 @@
 import { create } from "zustand";
-import * as api from "../lib/tauri";
-import type { VaultConfig, FileTreeNode } from "../lib/tauri";
+import * as api from "../lib/api";
+import type { VaultConfig, FileTreeNode } from "../lib/api";
 
 interface VaultStore {
   vault: VaultConfig | null;

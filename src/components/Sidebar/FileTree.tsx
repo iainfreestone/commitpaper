@@ -6,11 +6,10 @@ import {
   createFolder,
   deleteFile,
   renameFile,
-} from "../../lib/tauri";
+} from "../../lib/api";
 import { ContextMenu, ContextMenuItem } from "../ContextMenu";
-import type { FileTreeNode } from "../../lib/tauri";
+import type { FileTreeNode } from "../../lib/api";
 
-// Simple starred notes state (persisted in localStorage)
 function useStarred() {
   const [starred, setStarred] = useState<string[]>(() => {
     try {
@@ -47,7 +46,6 @@ export function FileTree() {
   const [createType, setCreateType] = useState<"file" | "folder">("file");
   const { starred, toggle: toggleStar, isStarred } = useStarred();
 
-  // Lifted expanded-folder state — persists across tree refreshes
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(
     new Set(),
   );
@@ -68,16 +66,13 @@ export function FileTree() {
     });
   }, []);
 
-  // Context menu state
   const [contextMenu, setContextMenu] = useState<{
     x: number;
     y: number;
     node: FileTreeNode;
   } | null>(null);
-  // Rename state
   const [renamingPath, setRenamingPath] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState("");
-  // Drag & drop
   const [dropTarget, setDropTarget] = useState<string | null>(null);
   const [draggedPath, setDraggedPath] = useState<string | null>(null);
 
@@ -87,7 +82,6 @@ export function FileTree() {
       if (createType === "folder") {
         const folderPath = newFileName.trim();
         await createFolder(folderPath);
-        // Auto-expand the new folder and its parents
         const parts = folderPath.split("/");
         let accumulated = "";
         for (const part of parts) {
@@ -217,7 +211,6 @@ export function FileTree() {
     return items;
   };
 
-  // Find starred files that exist
   const findNode = (
     tree: FileTreeNode[],
     path: string,

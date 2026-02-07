@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useEditorStore } from "../../stores/editorStore";
-import { getBacklinks } from "../../lib/tauri";
+import { getBacklinks } from "../../lib/api";
 
 export function BacklinksPanel() {
   const activeTabPath = useEditorStore((s) => s.activeTabPath);

@@ -70,11 +70,9 @@ export function PropertiesPanel() {
     setHasFrontmatter(true);
     const newFields = [{ key: "title", value: "" }];
     setFields(newFields);
-    // Prepend frontmatter to content
     const yaml = newFields.map((f) => `${f.key}: ${f.value}`).join("\n");
     const newContent = `---\n${yaml}\n---\n${content}`;
 
-    // Dispatch content change
     window.dispatchEvent(
       new CustomEvent("editor-set-content", {
         detail: { content: newContent },
@@ -88,7 +86,7 @@ export function PropertiesPanel() {
     const endIdx = trimmed.indexOf("\n---", 3);
     if (endIdx < 0) return;
 
-    const rest = trimmed.substring(endIdx + 4); // after closing ---
+    const rest = trimmed.substring(endIdx + 4);
     const yaml = newFields
       .filter((f) => f.key.trim())
       .map((f) => `${f.key}: ${f.value}`)

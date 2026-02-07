@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback } from "react";
+import React, { useEffect } from "react";
 import { useVaultStore } from "./stores/vaultStore";
 import { useEditorStore } from "./stores/editorStore";
 import { useGitStore } from "./stores/gitStore";
@@ -9,8 +9,7 @@ import { RightPanel } from "./components/RightPanel/RightPanel";
 import { StatusBar } from "./components/StatusBar";
 import { CommandPalette } from "./components/CommandPalette";
 import { openTodayNote } from "./components/Sidebar/DailyNotes";
-import { resolveWikilink } from "./lib/tauri";
-import { listen } from "@tauri-apps/api/event";
+import { resolveWikilink, startFileWatching, stopFileWatching } from "./lib/api";
 
 export default function App() {
   const vault = useVaultStore((s) => s.vault);
@@ -20,18 +19,14 @@ export default function App() {
   const [showCommandPalette, setShowCommandPalette] = React.useState(false);
   const [showRightPanel, setShowRightPanel] = React.useState(true);
 
-  // Listen for file system changes
+  // File watching via polling
   useEffect(() => {
     if (!vault) return;
-
-    const unlisten = listen("file-change", () => {
+    startFileWatching(() => {
       refreshFileTree();
       refreshStatus();
     });
-
-    return () => {
-      unlisten.then((fn) => fn());
-    };
+    return () => stopFileWatching();
   }, [vault]);
 
   // Refresh git status when vault opens
@@ -41,7 +36,7 @@ export default function App() {
     }
   }, [vault]);
 
-  // Handle wikilink clicks — resolve target name to file path and open it
+  // Handle wikilink clicks
   useEffect(() => {
     const handleWikilinkClick = async (e: Event) => {
       const target = (e as CustomEvent).detail?.target;
@@ -51,53 +46,41 @@ export default function App() {
         if (path) {
           useEditorStore.getState().openFile(path);
         } else {
-          // Note doesn't exist yet — create it
           useEditorStore.getState().openFile(`${target}.md`);
         }
       } catch {
-        // fallback: try opening as-is
         useEditorStore.getState().openFile(`${target}.md`);
       }
     };
-
     window.addEventListener("wikilink-click", handleWikilinkClick);
-    return () =>
-      window.removeEventListener("wikilink-click", handleWikilinkClick);
+    return () => window.removeEventListener("wikilink-click", handleWikilinkClick);
   }, [vault]);
 
   // Global keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const mod = e.ctrlKey || e.metaKey;
-
-      if (mod && e.key === "p") {
-        e.preventDefault();
-        setShowCommandPalette((v) => !v);
-      }
-      if (mod && e.key === "s") {
-        e.preventDefault();
-        saveFile();
-      }
-      if (mod && e.key === "b") {
-        e.preventDefault();
-        setShowRightPanel((v) => !v);
-      }
-      if (e.altKey && e.key === "d") {
-        e.preventDefault();
-        openTodayNote();
-      }
-      if (mod && e.key === "e") {
-        e.preventDefault();
-        window.dispatchEvent(new CustomEvent("toggle-preview-mode"));
-      }
-      if (e.key === "Escape") {
-        setShowCommandPalette(false);
-      }
+      if (mod && e.key === "p") { e.preventDefault(); setShowCommandPalette((v) => !v); }
+      if (mod && e.key === "s") { e.preventDefault(); saveFile(); }
+      if (mod && e.key === "b") { e.preventDefault(); setShowRightPanel((v) => !v); }
+      if (e.altKey && e.key === "d") { e.preventDefault(); openTodayNote(); }
+      if (mod && e.key === "e") { e.preventDefault(); window.dispatchEvent(new CustomEvent("toggle-preview-mode")); }
+      if (e.key === "Escape") { setShowCommandPalette(false); }
     };
-
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [saveFile]);
+
+  // Warn before unload if dirty
+  useEffect(() => {
+    const handler = (e: BeforeUnloadEvent) => {
+      if (useEditorStore.getState().isDirty) {
+        e.preventDefault();
+      }
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, []);
 
   if (!vault) {
     return <WelcomeScreen />;

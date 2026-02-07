@@ -1,12 +1,9 @@
 import { create } from "zustand";
-import * as api from "../lib/tauri";
+import * as api from "../lib/api";
 
 interface EditorStore {
-  // Currently open tabs
   openTabs: TabInfo[];
   activeTabPath: string | null;
-
-  // Current file content
   content: string;
   isDirty: boolean;
   wordCount: number;
@@ -25,9 +22,8 @@ export interface TabInfo {
   isDirty: boolean;
 }
 
-// Auto-save debounce timer
 let autoSaveTimer: ReturnType<typeof setTimeout> | null = null;
-const AUTO_SAVE_DELAY = 2000; // 2 seconds
+const AUTO_SAVE_DELAY = 2000;
 
 export const useEditorStore = create<EditorStore>((set, get) => ({
   openTabs: [],
@@ -63,10 +59,9 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
     const { openTabs, activeTabPath } = get();
     const tab = openTabs.find((t) => t.path === path);
 
-    // Warn if tab has unsaved changes (unless force-closing)
     if (tab?.isDirty && !force) {
       const discard = window.confirm(
-        `"${tab.name}" has unsaved changes. Close without saving?`,
+        `"${tab.name}" has unsaved changes. Close without saving?`
       );
       if (!discard) return;
     }
@@ -101,16 +96,14 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
   setActiveTab: (path: string) => {
     const { activeTabPath, isDirty, content, openTabs } = get();
 
-    // Save current content before switching
     if (activeTabPath && isDirty) {
       api
         .writeFile(activeTabPath, content)
         .then(() => api.reindexFile(activeTabPath))
         .then(() => {
-          // Mark the tab as saved
           set({
             openTabs: get().openTabs.map((t) =>
-              t.path === activeTabPath ? { ...t, isDirty: false } : t,
+              t.path === activeTabPath ? { ...t, isDirty: false } : t
             ),
           });
         })
@@ -128,11 +121,10 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
       content,
       isDirty: true,
       openTabs: openTabs.map((t) =>
-        t.path === activeTabPath ? { ...t, isDirty: true } : t,
+        t.path === activeTabPath ? { ...t, isDirty: true } : t
       ),
     });
 
-    // Auto-save after 2 seconds of inactivity
     if (autoSaveTimer) clearTimeout(autoSaveTimer);
     autoSaveTimer = setTimeout(() => {
       const state = get();
@@ -156,7 +148,7 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
       set({
         isDirty: false,
         openTabs: openTabs.map((t) =>
-          t.path === activeTabPath ? { ...t, isDirty: false } : t,
+          t.path === activeTabPath ? { ...t, isDirty: false } : t
         ),
       });
     } catch (e) {

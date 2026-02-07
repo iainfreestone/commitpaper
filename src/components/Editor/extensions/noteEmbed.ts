@@ -7,19 +7,12 @@ import {
   WidgetType,
 } from "@codemirror/view";
 import { RangeSetBuilder } from "@codemirror/state";
-import * as api from "../../../lib/tauri";
-
-// ──────────────────────────────────────────────
-// Note Embedding / Transclusion
-// Syntax:  ![[note-name]]
-// Renders the content of the referenced note inline
-// ──────────────────────────────────────────────
+import * as api from "../../../lib/api";
 
 const EMBED_RE = /!\[\[([^\]]+)\]\]/g;
 
-// Cache for embedded content
 const embedCache = new Map<string, { content: string; ts: number }>();
-const CACHE_TTL = 5000; // 5s
+const CACHE_TTL = 5000;
 
 async function fetchEmbedContent(name: string): Promise<string> {
   const cached = embedCache.get(name);
@@ -33,7 +26,6 @@ async function fetchEmbedContent(name: string): Promise<string> {
 
     const content = await api.readFile(path);
 
-    // Strip frontmatter
     let body = content;
     if (body.trimStart().startsWith("---")) {
       const endFm = body.indexOf("\n---", 3);
@@ -42,7 +34,6 @@ async function fetchEmbedContent(name: string): Promise<string> {
       }
     }
 
-    // Limit to first 30 lines
     const lines = body.split("\n").slice(0, 30);
     if (body.split("\n").length > 30) {
       lines.push("…");
@@ -74,12 +65,10 @@ class EmbedWidget extends WidgetType {
     body.textContent = "Loading…";
     wrap.appendChild(body);
 
-    // Fetch content async
     fetchEmbedContent(this.noteName).then((content) => {
       body.textContent = content;
     });
 
-    // Click header to navigate
     header.style.cursor = "pointer";
     header.addEventListener("click", async () => {
       try {
@@ -138,9 +127,7 @@ function buildEmbedDecorations(view: EditorView): DecorationSet {
       const end = start + match[0].length;
       const noteName = match[1].trim();
 
-      // Only render when cursor is not on this line
       if (!isOnLine(line.from, line.to, selections)) {
-        // Replace the ![[...]] text with the embed widget
         decos.push({
           from: start,
           to: end,

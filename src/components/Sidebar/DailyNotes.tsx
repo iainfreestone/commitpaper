@@ -1,10 +1,10 @@
 import React from "react";
 import { useEditorStore } from "../../stores/editorStore";
 import { useVaultStore } from "../../stores/vaultStore";
-import * as api from "../../lib/tauri";
+import * as api from "../../lib/api";
 
 function formatDate(date: Date): string {
-  return date.toISOString().slice(0, 10); // YYYY-MM-DD
+  return date.toISOString().slice(0, 10);
 }
 
 function formatDisplay(date: Date): string {
@@ -20,10 +20,8 @@ async function openDailyNote(dateStr: string) {
   const path = `daily/${dateStr}.md`;
 
   try {
-    // Try to open existing note
     await useEditorStore.getState().openFile(path);
   } catch {
-    // Doesn't exist—create it
     try {
       await api.createFolder("daily");
     } catch {

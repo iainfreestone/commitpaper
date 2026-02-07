@@ -10,7 +10,6 @@ export function EditorArea() {
     useEditorStore();
   const [viewMode, setViewMode] = useState<ViewMode>("source");
 
-  // Listen for Ctrl+E toggle
   useEffect(() => {
     const handler = () => {
       setViewMode((v) => (v === "source" ? "preview" : "source"));

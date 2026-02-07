@@ -26,7 +26,7 @@ export function OutlinePanel() {
       if (match) {
         result.push({
           level: match[1].length,
-          text: match[2].replace(/\*\*|__|~~|==|`/g, "").trim(), // strip formatting
+          text: match[2].replace(/\*\*|__|~~|==|`/g, "").trim(),
           line: idx + 1,
         });
       }
@@ -78,7 +78,6 @@ export function OutlinePanel() {
           className="outline-item"
           style={{ paddingLeft: `${12 + (heading.level - minLevel) * 16}px` }}
           onClick={() => {
-            // Dispatch a custom event to scroll the editor to this line
             window.dispatchEvent(
               new CustomEvent("editor-goto-line", {
                 detail: { line: heading.line },

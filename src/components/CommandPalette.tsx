@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useEditorStore } from "../stores/editorStore";
-import { getNoteNames, resolveWikilink } from "../lib/tauri";
+import { getNoteNames, resolveWikilink } from "../lib/api";
 
 interface CommandPaletteProps {
   onClose: () => void;
@@ -34,7 +34,6 @@ export function CommandPalette({ onClose }: CommandPaletteProps) {
     if (path) {
       openFile(path);
     } else {
-      // Create new note
       openFile(`${name}.md`);
     }
     onClose();

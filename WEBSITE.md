@@ -2,9 +2,9 @@
 
 ## Your notes. Your repo. Your rules.
 
-Gitsidian is a free, open-source desktop app for writing and organising your notes — powered entirely by Git. No cloud accounts, no subscriptions, no proprietary formats. Just Markdown files in a repository you own.
+Gitsidian is a free, open-source web app for writing and organising your notes — powered entirely by Git. No cloud accounts, no subscriptions, no proprietary formats. Just Markdown files in a repository you own.
 
-Think of it as **Obsidian meets Git**, built from scratch with modern tools.
+Think of it as **Obsidian meets Git**, running right in your browser.
 
 ---
 
@@ -25,7 +25,7 @@ No vendor lock-in. No monthly fee. No telemetry.
 
 ## What It Looks Like
 
-Gitsidian is a native desktop app with a clean, dark interface built around three panels:
+Gitsidian is a web app with a clean, dark interface built around three panels:
 
 | Panel               | What it does                                                                          |
 | ------------------- | ------------------------------------------------------------------------------------- |
@@ -74,17 +74,15 @@ The **Graph View** renders your entire vault as an interactive network:
 
 See the shape of your thinking at a glance.
 
-### Git integration, built in
+### Git awareness
 
-You don't need to leave the app to use Git. The sidebar has a dedicated **Git** tab:
+Gitsidian reads your Git status directly from the filesystem:
 
-- **See what changed** — modified, added, and deleted files appear with colour-coded status indicators.
-- **Stage and commit** — click files to stage them, type a message, and commit.
-- **Push and pull** — sync with your remote in one click.
-- **Branch** — create and switch branches without touching the terminal.
-- **File history** — see the full commit log for any note and view old versions.
+- **See your branch** — the current branch name is read from `.git/HEAD` and displayed in the sidebar and status bar.
+- **Modified file count** — see how many files have been changed at a glance.
+- **Terminal guidance** — the Git panel shows the commands you need to commit and push from your terminal.
 
-If your vault isn't a Git repo yet, Gitsidian can initialise one for you.
+For full Git operations (commit, push, pull, branch), use your terminal or favourite Git client alongside Gitsidian.
 
 ### Daily notes
 
@@ -163,7 +161,7 @@ graph TD
 ### Search everything
 
 - **Command palette** (`Ctrl+P`) — fuzzy-search all note names instantly. If the note doesn't exist, pressing Enter creates it.
-- **Full-text search** — powered by Tantivy, a Rust search engine. Finds content across every note with ranked results and highlighted snippets.
+- **Full-text search** — powered by MiniSearch, a client-side search engine. Finds content across every note with ranked results and highlighted snippets.
 
 ### Tags and properties
 
@@ -200,15 +198,17 @@ The **Properties** panel gives you a visual editor for YAML frontmatter — add,
 
 ## How It Works
 
-Gitsidian is a native desktop application — not a web app, not an Electron wrapper.
+Gitsidian runs entirely in your browser using the **File System Access API**.
 
-**Frontend:** React 19 with TypeScript, running in a lightweight webview. The editor is CodeMirror 6 with 10 custom extensions for live preview, wikilinks, autocomplete, math, diagrams, callouts, and more. State is managed with Zustand. The graph is rendered with Cytoscape.js.
+**Frontend:** React 19 with TypeScript. The editor is CodeMirror 6 with 10 custom extensions for live preview, wikilinks, autocomplete, math, diagrams, callouts, and more. State is managed with Zustand. The graph is rendered with Cytoscape.js.
 
-**Backend:** Rust, compiled natively for your platform. Git operations use libgit2 (via the git2 crate) for reliable, fast version control. Full-text search is powered by Tantivy, a Rust search engine inspired by Lucene. File watching uses the notify crate for instant updates when files change on disk. Markdown parsing uses comrak.
+**File Access:** The browser's File System Access API lets Gitsidian read and write files directly on your filesystem — no server needed. You pick a folder, grant permission, and Gitsidian works with your files directly.
 
-**Desktop shell:** Tauri 2 bridges the frontend and backend with a tiny footprint — no bundled Chromium, no Node.js runtime. The result is a fast, lightweight app that starts in under a second.
+**Search:** Client-side full-text search powered by MiniSearch, with fuzzy matching and ranked results.
 
-Your vault is just a folder on your filesystem. Gitsidian reads and writes plain `.md` files. Nothing is stored in a database. Nothing is uploaded anywhere. If you delete Gitsidian, your notes are still right where you left them.
+**Offline:** Gitsidian is a Progressive Web App. Once loaded, it works fully offline.
+
+Your vault is just a folder on your filesystem. Gitsidian reads and writes plain `.md` files. Nothing is stored in a database. Nothing is uploaded anywhere. If you stop using Gitsidian, your notes are still right where you left them.
 
 ---
 
@@ -219,11 +219,9 @@ Your vault is just a folder on your filesystem. Gitsidian reads and writes plain
 **Prerequisites:**
 
 - [Node.js](https://nodejs.org) 18+
-- [Rust](https://rustup.rs) 1.77+
-- Windows: [Visual Studio Build Tools 2022](https://visualstudio.microsoft.com/visual-cpp-build-tools/) with the "Desktop development with C++" workload
 
 ```bash
-git clone https://github.com/your-username/gitsidian.git
+git clone https://github.com/IainMcl/gitsidian.git
 cd gitsidian
 npm install
 ```
@@ -231,14 +229,14 @@ npm install
 ### 2. Run
 
 ```bash
-npx tauri dev
+npm run dev
 ```
 
-The app opens in a native window. Hot-reload is enabled — changes to the UI appear instantly.
+Opens at [http://localhost:5180](http://localhost:5180). Hot-reload is enabled.
 
 ### 3. Open a vault
 
-Click **Open Vault** and select any folder. If it's already a Git repo, Git features activate automatically. If not, you can initialise one from the Git panel.
+Click **Open Vault** and select any folder. Your browser will ask for read/write permission. If the folder is a Git repo, the Git panel shows your branch and modified files.
 
 ### 4. Start writing
 
@@ -247,31 +245,28 @@ Click the **+** button in the sidebar or press **Ctrl+P** and type a name to cre
 ### 5. Build for production
 
 ```bash
-npx tauri build
+npm run build
 ```
 
-Produces a native installer for your platform.
+Produces a static site in `dist/`. Deploy to any web server.
 
 ---
 
 ## Tech Stack
 
-| Layer         | Technology     | Why                                                |
-| ------------- | -------------- | -------------------------------------------------- |
-| Desktop shell | Tauri 2        | Native performance, tiny bundle, no Electron bloat |
-| UI framework  | React 19       | Component-driven, fast rendering                   |
-| Editor        | CodeMirror 6   | Extensible, performant, modern editor toolkit      |
-| Type safety   | TypeScript 5   | Catch bugs before they ship                        |
-| Build tool    | Vite 7         | Instant HMR, fast builds                           |
-| State         | Zustand 5      | Minimal, flexible state management                 |
-| Graph         | Cytoscape.js   | Battle-tested graph visualisation                  |
-| Math          | KaTeX          | Fast LaTeX rendering                               |
-| Diagrams      | Mermaid        | Declarative diagrams from text                     |
-| Git           | git2 (libgit2) | Native Git operations in Rust                      |
-| Search        | Tantivy        | Blazing-fast full-text search                      |
-| Markdown      | comrak         | CommonMark + extensions parsing                    |
-| File watching | notify         | Cross-platform filesystem events                   |
-| Async         | tokio          | Rust async runtime                                 |
+| Layer         | Technology              | Why                                                |
+| ------------- | ----------------------- | -------------------------------------------------- |
+| UI framework  | React 19                | Component-driven, fast rendering                   |
+| Editor        | CodeMirror 6            | Extensible, performant, modern editor toolkit      |
+| Type safety   | TypeScript 5            | Catch bugs before they ship                        |
+| Build tool    | Vite 7                  | Instant HMR, fast builds                           |
+| State         | Zustand 5               | Minimal, flexible state management                 |
+| Graph         | Cytoscape.js            | Battle-tested graph visualisation                  |
+| Math          | KaTeX                   | Fast LaTeX rendering                               |
+| Diagrams      | Mermaid                 | Declarative diagrams from text                     |
+| Search        | MiniSearch              | Client-side full-text search                       |
+| File access   | File System Access API  | Direct filesystem read/write in the browser        |
+| PWA           | vite-plugin-pwa         | Offline support and installability                 |
 
 ---
 
@@ -280,7 +275,7 @@ Produces a native installer for your platform.
 1. **Local first.** Your files live on your machine. You choose if and where to sync them.
 2. **Plain text.** Markdown is the format. No proprietary schemas, no binary blobs.
 3. **Git native.** Version control isn't a feature bolted on — it's the foundation.
-4. **Fast and light.** Native Rust backend, no bundled browser engine, sub-second startup.
+4. **Fast and light.** No backend server, no bundled browser engine, instant startup.
 5. **Open source.** MIT licensed. Read the code, fork it, make it yours.
 
 ---
@@ -293,17 +288,20 @@ It's inspired by Obsidian but takes a different approach. Where Obsidian uses it
 **Does it work with existing Obsidian vaults?**
 Yes. Gitsidian reads standard Markdown files and supports Obsidian-flavoured syntax including wikilinks, callouts, and frontmatter. Point it at your existing vault folder.
 
-**What platforms does it support?**
-Windows, macOS, and Linux — anywhere Tauri 2 runs.
+**What browsers are supported?**
+Chrome 86+ and Edge 86+ (requires the File System Access API). Firefox and Safari are not currently supported.
 
 **Is it free?**
 Yes. MIT licensed, free forever.
 
 **Where is my data stored?**
-On your filesystem, in the folder you choose. Gitsidian doesn't store data anywhere else. Push to a remote Git repo if you want backups or sync.
+On your filesystem, in the folder you choose. Gitsidian doesn't store data anywhere else. Nothing is uploaded. Nothing leaves your browser.
 
 **Can I use it offline?**
-Absolutely. Everything works offline. Git push/pull requires internet, but writing, searching, and organising are fully local.
+Absolutely. Once loaded, Gitsidian works fully offline as a Progressive Web App. Writing, searching, and organising are fully local.
+
+**Can I commit and push from Gitsidian?**
+Not directly — browsers can't run Git operations. The Git panel shows your branch and modified files, then guides you to use your terminal for commits and pushes.
 
 **How is it different from VS Code + Markdown?**
 Gitsidian is purpose-built for note-taking. It has wikilinks, backlinks, a knowledge graph, daily notes, templates, callouts, and a live preview that VS Code doesn't offer out of the box. It's also much lighter than VS Code.

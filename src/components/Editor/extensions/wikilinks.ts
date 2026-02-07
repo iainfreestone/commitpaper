@@ -8,14 +8,8 @@ import {
 } from "@codemirror/view";
 import { RangeSetBuilder } from "@codemirror/state";
 
-// ============================================================
-// Wikilink syntax detection and decoration for CodeMirror 6
-// ============================================================
-
-// Regex to match [[wikilinks]] and [[wikilinks|display text]]
 const WIKILINK_RE = /\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g;
 
-// CSS class-based theme for wikilinks
 export const wikilinkTheme = EditorView.baseTheme({
   ".cm-wikilink": {
     color: "#89b4fa",
@@ -31,7 +25,6 @@ export const wikilinkTheme = EditorView.baseTheme({
   },
 });
 
-// Decoration marks
 const wikilinkMark = Decoration.mark({ class: "cm-wikilink" });
 const bracketMark = Decoration.mark({ class: "cm-wikilink-bracket" });
 
@@ -48,14 +41,8 @@ function buildDecorations(view: EditorView): DecorationSet {
     while ((match = WIKILINK_RE.exec(text)) !== null) {
       const start = line.from + match.index;
       const end = start + match[0].length;
-
-      // Opening brackets [[
       builder.add(start, start + 2, bracketMark);
-
-      // The link content (target or target|display)
       builder.add(start + 2, end - 2, wikilinkMark);
-
-      // Closing brackets ]]
       builder.add(end - 2, end, bracketMark);
     }
   }
@@ -81,7 +68,6 @@ export const wikilinkPlugin = ViewPlugin.fromClass(
     decorations: (v) => v.decorations,
     eventHandlers: {
       click: (e, view) => {
-        // Handle clicking on wikilinks
         const pos = view.posAtCoords({ x: e.clientX, y: e.clientY });
         if (pos === null) return false;
 
@@ -96,7 +82,6 @@ export const wikilinkPlugin = ViewPlugin.fromClass(
 
           if (pos >= start && pos <= end) {
             const target = match[1].trim();
-            // Dispatch a custom event that the app can listen to
             const event = new CustomEvent("wikilink-click", {
               detail: { target },
             });

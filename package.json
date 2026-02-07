@@ -1,24 +1,13 @@
 {
-  "name": "gitsidian",
+  "name": "gitsidian-web",
   "version": "0.1.0",
   "private": true,
-  "description": "Git-native personal knowledge management",
+  "description": "Gitsidian — browser-based Obsidian-like note editor for Git repos",
+  "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "tauri": "tauri"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "devDependencies": {
-    "@tauri-apps/cli": "^2.10.0",
-    "@types/cytoscape": "^3.21.9",
-    "@types/react": "^19.2.13",
-    "@types/react-dom": "^19.2.3",
-    "@vitejs/plugin-react": "^5.1.3",
-    "typescript": "^5.9.3",
-    "vite": "^7.3.1"
+    "preview": "vite preview"
   },
   "dependencies": {
     "@codemirror/autocomplete": "^6.20.0",
@@ -30,17 +19,23 @@
     "@codemirror/theme-one-dark": "^6.1.3",
     "@codemirror/view": "^6.39.12",
     "@lezer/markdown": "^1.6.3",
-    "@tauri-apps/api": "^2.10.1",
-    "@tauri-apps/plugin-dialog": "^2.6.0",
-    "@tauri-apps/plugin-fs": "^2.4.5",
-    "@tauri-apps/plugin-shell": "^2.3.5",
-    "@types/katex": "^0.16.8",
     "codemirror": "^6.0.2",
     "cytoscape": "^3.33.1",
     "katex": "^0.16.28",
     "mermaid": "^11.12.2",
+    "minisearch": "^7.1.1",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
+    "react-router-dom": "^7.6.2",
     "zustand": "^5.0.11"
+  },
+  "devDependencies": {
+    "@types/cytoscape": "^3.21.9",
+    "@types/react": "^19.2.13",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^5.1.3",
+    "typescript": "^5.9.3",
+    "vite": "^7.3.1",
+    "vite-plugin-pwa": "^1.0.0"
   }
 }

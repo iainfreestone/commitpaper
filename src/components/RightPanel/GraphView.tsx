@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import cytoscape from "cytoscape";
 import { useEditorStore } from "../../stores/editorStore";
-import { getGraphData, getLocalGraph } from "../../lib/tauri";
-import type { GraphData } from "../../lib/tauri";
+import { getGraphData, getLocalGraph } from "../../lib/api";
+import type { GraphData } from "../../lib/api";
 
 export function GraphView() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -32,7 +32,6 @@ export function GraphView() {
   const renderGraph = (data: GraphData) => {
     if (!containerRef.current) return;
 
-    // Destroy previous instance
     if (cyRef.current) {
       cyRef.current.destroy();
     }
@@ -120,7 +119,6 @@ export function GraphView() {
       wheelSensitivity: 0.3,
     });
 
-    // Click handler
     cy.on("tap", "node", (evt) => {
       const path = evt.target.data("path");
       if (path) {

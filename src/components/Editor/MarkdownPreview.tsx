@@ -3,12 +3,6 @@ import { useEditorStore } from "../../stores/editorStore";
 import katex from "katex";
 import mermaid from "mermaid";
 
-// ──────────────────────────────────────────────
-// Markdown Preview Pane
-// Full rendered HTML view of the current note.
-// Toggle between Source / Preview with a button.
-// ──────────────────────────────────────────────
-
 let mermaidReady = false;
 
 function ensureMermaid() {
@@ -30,12 +24,9 @@ function ensureMermaid() {
   }
 }
 
-// Simple markdown → HTML renderer
-// Not a full parser — covers the common cases
 function markdownToHtml(md: string): string {
   let html = md;
 
-  // Strip frontmatter
   if (html.trimStart().startsWith("---")) {
     const end = html.indexOf("\n---", 3);
     if (end > 0) {
@@ -43,13 +34,11 @@ function markdownToHtml(md: string): string {
     }
   }
 
-  // Escape HTML (but preserve our own tags)
   html = html
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;");
 
-  // Fenced code blocks (```lang ... ```)
   html = html.replace(/```(\w*)\n([\s\S]*?)```/g, (_, lang, code) => {
     if (lang === "mermaid") {
       return `<div class="preview-mermaid" data-code="${encodeURIComponent(code.trim())}">Loading diagram…</div>`;
@@ -57,7 +46,6 @@ function markdownToHtml(md: string): string {
     return `<pre class="preview-code"><code class="language-${lang || "text"}">${code}</code></pre>`;
   });
 
-  // Block math $$...$$
   html = html.replace(/\$\$([\s\S]*?)\$\$/g, (_, tex) => {
     try {
       return `<div class="preview-math-block">${katex.renderToString(tex.trim(), { displayMode: true, throwOnError: false })}</div>`;
@@ -66,7 +54,6 @@ function markdownToHtml(md: string): string {
     }
   });
 
-  // Inline math $...$
   html = html.replace(/(?<!\$)\$(?!\$)(.+?)(?<!\$)\$(?!\$)/g, (_, tex) => {
     try {
       return katex.renderToString(tex, {
@@ -78,7 +65,6 @@ function markdownToHtml(md: string): string {
     }
   });
 
-  // Callouts: > [!type] title  +  continuation lines
   html = html.replace(
     /^&gt;\s*\[!(\w+)\]\s*(.*?)$((?:\n&gt;.*$)*)/gm,
     (_, type, title, body) => {
@@ -89,30 +75,13 @@ function markdownToHtml(md: string): string {
         .trim();
       const cleanTitle = title || type.charAt(0).toUpperCase() + type.slice(1);
       const icons: Record<string, string> = {
-        note: "📝",
-        tip: "💡",
-        info: "ℹ️",
-        warning: "⚠️",
-        danger: "🔴",
-        bug: "🐛",
-        example: "📋",
-        quote: "💬",
-        success: "✅",
-        question: "❓",
-        failure: "❌",
+        note: "📝", tip: "💡", info: "ℹ️", warning: "⚠️", danger: "🔴",
+        bug: "🐛", example: "📋", quote: "💬", success: "✅", question: "❓", failure: "❌",
       };
       const colors: Record<string, string> = {
-        note: "#89b4fa",
-        tip: "#a6e3a1",
-        info: "#89dceb",
-        warning: "#f9e2af",
-        danger: "#f38ba8",
-        bug: "#f38ba8",
-        example: "#cba6f7",
-        quote: "#a6adc8",
-        success: "#a6e3a1",
-        question: "#f9e2af",
-        failure: "#f38ba8",
+        note: "#89b4fa", tip: "#a6e3a1", info: "#89dceb", warning: "#f9e2af",
+        danger: "#f38ba8", bug: "#f38ba8", example: "#cba6f7", quote: "#a6adc8",
+        success: "#a6e3a1", question: "#f9e2af", failure: "#f38ba8",
       };
       const color = colors[type] || colors.note;
       const icon = icons[type] || icons.note;
@@ -120,7 +89,6 @@ function markdownToHtml(md: string): string {
     },
   );
 
-  // Headings
   html = html.replace(/^######\s+(.*)$/gm, "<h6>$1</h6>");
   html = html.replace(/^#####\s+(.*)$/gm, "<h5>$1</h5>");
   html = html.replace(/^####\s+(.*)$/gm, "<h4>$1</h4>");
@@ -128,10 +96,8 @@ function markdownToHtml(md: string): string {
   html = html.replace(/^##\s+(.*)$/gm, "<h2>$1</h2>");
   html = html.replace(/^#\s+(.*)$/gm, "<h1>$1</h1>");
 
-  // Horizontal rules
   html = html.replace(/^(-{3,}|\*{3,}|_{3,})\s*$/gm, "<hr />");
 
-  // Tables
   html = html.replace(
     /^(\|.+\|)\n(\|[\s:|-]+\|)\n((?:\|.+\|\n?)*)/gm,
     (_, header, separator, body) => {
@@ -172,36 +138,23 @@ function markdownToHtml(md: string): string {
     },
   );
 
-  // Bold + italic
   html = html.replace(/\*\*\*(.+?)\*\*\*/g, "<strong><em>$1</em></strong>");
   html = html.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
   html = html.replace(/\*(.+?)\*/g, "<em>$1</em>");
-
-  // Strikethrough
   html = html.replace(/~~(.+?)~~/g, "<del>$1</del>");
-
-  // Highlight
   html = html.replace(/==(.+?)==/g, "<mark>$1</mark>");
-
-  // Inline code
   html = html.replace(
     /`([^`]+)`/g,
     '<code class="preview-inline-code">$1</code>',
   );
-
-  // Images
   html = html.replace(
     /!\[([^\]]*)\]\(([^)]+)\)/g,
     '<img src="$2" alt="$1" style="max-width:100%;border-radius:6px;" />',
   );
-
-  // Links
   html = html.replace(
     /\[([^\]]+)\]\(([^)]+)\)/g,
     '<a href="$2" class="preview-link">$1</a>',
   );
-
-  // Wikilinks
   html = html.replace(
     /\[\[([^\]|]+)\|([^\]]+)\]\]/g,
     '<span class="preview-wikilink" data-wikilink="$1" role="link" tabindex="0">$2</span>',
@@ -210,8 +163,6 @@ function markdownToHtml(md: string): string {
     /\[\[([^\]]+)\]\]/g,
     '<span class="preview-wikilink" data-wikilink="$1" role="link" tabindex="0">$1</span>',
   );
-
-  // Checkboxes
   html = html.replace(
     /^- \[x\]\s+(.*)/gm,
     '<div class="preview-checkbox checked">☑ <del>$1</del></div>',
@@ -220,17 +171,9 @@ function markdownToHtml(md: string): string {
     /^- \[ \]\s+(.*)/gm,
     '<div class="preview-checkbox">☐ $1</div>',
   );
-
-  // Unordered lists
   html = html.replace(/^- (.*)$/gm, "<li>$1</li>");
-
-  // Ordered lists
   html = html.replace(/^\d+\.\s+(.*)$/gm, "<li>$1</li>");
-
-  // Blockquotes (non-callout)
   html = html.replace(/^&gt;\s?(.*)/gm, "<blockquote>$1</blockquote>");
-
-  // Paragraphs — join consecutive non-tag lines
   html = html.replace(/\n{2,}/g, "\n<p></p>\n");
 
   return html;
@@ -242,10 +185,8 @@ interface MarkdownPreviewProps {
 
 export function MarkdownPreview({ content }: MarkdownPreviewProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-
   const rendered = useMemo(() => markdownToHtml(content), [content]);
 
-  // Handle wikilink clicks in preview
   useEffect(() => {
     if (!containerRef.current) return;
     const handleClick = (e: MouseEvent) => {
@@ -263,7 +204,6 @@ export function MarkdownPreview({ content }: MarkdownPreviewProps) {
     return () => container.removeEventListener("click", handleClick);
   }, [rendered]);
 
-  // Render mermaid diagrams after DOM update
   useEffect(() => {
     if (!containerRef.current) return;
     ensureMermaid();

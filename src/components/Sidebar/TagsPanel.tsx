@@ -11,10 +11,7 @@ export function TagsPanel() {
   const [allTags, setAllTags] = useState<TagInfo[]>([]);
   const [filter, setFilter] = useState("");
 
-  // Extract tags from current content + could be extended to scan all files
   useEffect(() => {
-    // For now, extract tags from the current note content
-    // In a full implementation, this would scan all indexed notes
     if (!content) {
       setAllTags([]);
       return;
@@ -24,7 +21,6 @@ export function TagsPanel() {
     const lines = content.split("\n");
 
     for (const line of lines) {
-      // Match inline #tags (not inside code blocks or URLs)
       const tagMatches = line.matchAll(/(?:^|\s)#([a-zA-Z][\w-/]*)/g);
       for (const match of tagMatches) {
         const tag = match[1];
@@ -32,7 +28,6 @@ export function TagsPanel() {
       }
     }
 
-    // Also extract from YAML frontmatter
     if (content.startsWith("---")) {
       const endIdx = content.indexOf("\n---", 3);
       if (endIdx > 0) {
@@ -44,7 +39,6 @@ export function TagsPanel() {
             if (tag) tagMap.set(tag, (tagMap.get(tag) || 0) + 1);
           });
         }
-        // Also handle YAML list tags
         const tagsListMatch = yaml.match(/^tags:\s*\n((?:\s+-\s+.+\n?)+)/m);
         if (tagsListMatch) {
           tagsListMatch[1].split("\n").forEach((line) => {

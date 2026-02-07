@@ -1,21 +1,18 @@
 import React, { useState, useEffect } from "react";
 import { useEditorStore } from "../../stores/editorStore";
 import { useVaultStore } from "../../stores/vaultStore";
-import * as api from "../../lib/tauri";
-import type { FileTreeNode } from "../../lib/tauri";
+import * as api from "../../lib/api";
+import type { FileTreeNode } from "../../lib/api";
 
 function findTemplateFiles(nodes: FileTreeNode[]): string[] {
   const results: string[] = [];
-
   for (const node of nodes) {
     if (node.type === "folder" && node.name.toLowerCase() === "templates") {
-      // Collect all .md files in the templates folder
       if (node.children) {
         collectMdFiles(node.children, results);
       }
     }
   }
-
   return results;
 }
 
@@ -39,7 +36,6 @@ export function TemplatesPanel() {
   const fileTree = useVaultStore((s) => s.fileTree);
   const refreshFileTree = useVaultStore((s) => s.refreshFileTree);
   const [templates, setTemplates] = useState<string[]>([]);
-  const [showInsert, setShowInsert] = useState(false);
 
   useEffect(() => {
     setTemplates(findTemplateFiles(fileTree));
@@ -57,8 +53,6 @@ export function TemplatesPanel() {
   const insertTemplate = async (templatePath: string) => {
     try {
       const templateContent = await api.readFile(templatePath);
-
-      // Process template variables
       const now = new Date();
       const processed = templateContent
         .replace(/\{\{date\}\}/g, now.toISOString().slice(0, 10))
@@ -73,13 +67,11 @@ export function TemplatesPanel() {
             ?.replace(/\.md$/, "") || "Untitled",
         );
 
-      // Dispatch to editor to insert at cursor
       window.dispatchEvent(
         new CustomEvent("editor-insert-template", {
           detail: { content: processed },
         }),
       );
-      setShowInsert(false);
     } catch (e) {
       console.error("Failed to insert template:", e);
     }
@@ -91,8 +83,6 @@ export function TemplatesPanel() {
       const templateName = formatTemplateName(templatePath);
       const now = new Date();
       const dateStr = now.toISOString().slice(0, 10);
-
-      // Generate a note name
       const notePath = `${templateName}-${dateStr}.md`;
 
       const processed = templateContent

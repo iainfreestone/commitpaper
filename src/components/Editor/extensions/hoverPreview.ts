@@ -1,16 +1,8 @@
 import {
   EditorView,
-  ViewPlugin,
-  ViewUpdate,
-  Tooltip,
-  showTooltip,
   hoverTooltip,
 } from "@codemirror/view";
-import * as api from "../../../lib/tauri";
-
-// ──────────────────────────────────────────────
-// Hover Preview: show a snippet of linked note on hover
-// ──────────────────────────────────────────────
+import * as api from "../../../lib/api";
 
 const WIKILINK_RE = /\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g;
 
@@ -19,9 +11,7 @@ async function getHoverContent(target: string): Promise<string | null> {
     const resolved = await api.resolveWikilink(target);
     if (!resolved) return null;
     const content = await api.readFile(resolved);
-    // Return first ~15 lines as preview
     const lines = content.split("\n");
-    // Skip frontmatter
     let start = 0;
     if (lines[0]?.trim() === "---") {
       for (let i = 1; i < lines.length; i++) {
@@ -114,7 +104,6 @@ export const hoverPreviewTheme = EditorView.baseTheme({
     opacity: "0.9",
   },
   ".cm-tooltip": {
-    // Ensure tooltip container doesn't clip
     overflow: "visible !important",
   },
 });
