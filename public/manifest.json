@@ -1,6 +1,6 @@
 {
-  "name": "Gitsidian Web",
-  "short_name": "Gitsidian",
+  "name": "CommitPaper",
+  "short_name": "CommitPaper",
   "description": "A note-taking app powered by Git — in your browser",
   "start_url": "/app",
   "display": "standalone",

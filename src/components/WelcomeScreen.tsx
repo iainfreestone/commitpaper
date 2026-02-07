@@ -23,7 +23,7 @@ export function WelcomeScreen() {
 
   return (
     <div className="welcome-screen">
-      <h1>Gitsidian</h1>
+      <h1>CommitPaper</h1>
       <p>
         Git-native personal knowledge management. Open a folder to start — it
         works with any Git repository.

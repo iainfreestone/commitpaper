@@ -5,7 +5,7 @@ export default function LandingPage() {
     <div className="landing-page">
       {/* Navigation */}
       <nav className="landing-nav">
-        <div className="landing-nav-logo">Gitsidian</div>
+        <div className="landing-nav-logo">CommitPaper</div>
         <div className="landing-nav-links">
           <a href="#features">Features</a>
           <a href="#how-it-works">How It Works</a>
@@ -30,7 +30,7 @@ export default function LandingPage() {
             Open in Browser
           </Link>
           <a
-            href="https://github.com/IainMcl/gitsidian"
+            href="https://github.com/IainMcl/commitpaper"
             target="_blank"
             rel="noopener noreferrer"
             className="hero-btn-secondary"
@@ -49,13 +49,13 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Why Gitsidian */}
+      {/* Why CommitPaper */}
       <section className="landing-section">
-        <h2>Why Gitsidian?</h2>
+        <h2>Why CommitPaper?</h2>
         <p className="section-subtitle">
           Most note-taking apps lock you into their ecosystem. Your notes live on
           someone else's server, in someone else's format, behind someone else's
-          paywall. Gitsidian takes a different approach.
+          paywall. CommitPaper takes a different approach.
         </p>
         <div className="value-grid">
           <div className="value-item">
@@ -203,7 +203,7 @@ export default function LandingPage() {
         <h2>How It Works</h2>
         <p className="section-subtitle">
           The web version runs entirely in your browser using the File System Access API.
-          Pick a folder, and Gitsidian reads and writes your Markdown files directly —
+          Pick a folder, and CommitPaper reads and writes your Markdown files directly —
           no server, no uploads, nothing leaves your machine.
         </p>
         <div className="feature-grid">
@@ -235,7 +235,7 @@ export default function LandingPage() {
             <div className="feature-card-icon">&#x1F310;</div>
             <h3>Works Offline</h3>
             <p>
-              Once loaded, Gitsidian Web works fully offline as a Progressive Web App.
+              Once loaded, CommitPaper works fully offline as a Progressive Web App.
               No internet needed for writing and organising.
             </p>
           </div>
@@ -272,15 +272,15 @@ export default function LandingPage() {
             <h4>Is this a replacement for Obsidian?</h4>
             <p>
               It's inspired by Obsidian but takes a different approach. Where Obsidian uses
-              its own sync service, Gitsidian uses Git. Where Obsidian has a plugin ecosystem,
-              Gitsidian has the features built in. If you want your notes in a Git repo with
-              no extra setup, Gitsidian is for you.
+              its own sync service, CommitPaper uses Git. Where Obsidian has a plugin ecosystem,
+              CommitPaper has the features built in. If you want your notes in a Git repo with
+              no extra setup, CommitPaper is for you.
             </p>
           </div>
           <div className="faq-item">
             <h4>Does it work with existing Obsidian vaults?</h4>
             <p>
-              Yes. Gitsidian reads standard Markdown files and supports Obsidian-flavoured
+              Yes. CommitPaper reads standard Markdown files and supports Obsidian-flavoured
               syntax including wikilinks, callouts, and frontmatter. Point it at your existing
               vault folder.
             </p>
@@ -288,7 +288,7 @@ export default function LandingPage() {
           <div className="faq-item">
             <h4>What browsers are supported?</h4>
             <p>
-              Gitsidian requires Chrome 86+ or Edge 86+ for the File System Access API.
+              CommitPaper requires Chrome 86+ or Edge 86+ for the File System Access API.
               Firefox and Safari don't support this API yet.
             </p>
           </div>
@@ -299,7 +299,7 @@ export default function LandingPage() {
           <div className="faq-item">
             <h4>Where is my data stored?</h4>
             <p>
-              On your filesystem, in the folder you choose. Gitsidian doesn't store data
+              On your filesystem, in the folder you choose. CommitPaper doesn't store data
               anywhere else. Nothing is uploaded. Nothing leaves your browser.
             </p>
           </div>
@@ -351,8 +351,8 @@ export default function LandingPage() {
       {/* Footer */}
       <footer className="landing-footer">
         <p>
-          Gitsidian — MIT Licensed — {' '}
-          <a href="https://github.com/IainMcl/gitsidian" target="_blank" rel="noopener noreferrer">
+          CommitPaper — MIT Licensed — {' '}
+          <a href="https://github.com/IainMcl/commitpaper" target="_blank" rel="noopener noreferrer">
             GitHub
           </a>
         </p>

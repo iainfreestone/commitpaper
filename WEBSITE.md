@@ -1,18 +1,18 @@
-# Gitsidian
+# CommitPaper
 
 ## Your notes. Your repo. Your rules.
 
-Gitsidian is a free, open-source web app for writing and organising your notes — powered entirely by Git. No cloud accounts, no subscriptions, no proprietary formats. Just Markdown files in a repository you own.
+CommitPaper is a free, open-source web app for writing and organising your notes — powered entirely by Git. No cloud accounts, no subscriptions, no proprietary formats. Just Markdown files in a repository you own.
 
 Think of it as **Obsidian meets Git**, running right in your browser.
 
 ---
 
-## Why Gitsidian?
+## Why CommitPaper?
 
 Most note-taking apps lock you into their ecosystem. Your notes live on someone else's server, in someone else's format, behind someone else's paywall.
 
-Gitsidian takes a different approach:
+CommitPaper takes a different approach:
 
 - **Your notes are plain Markdown files.** Open them in any editor, on any device, forever.
 - **Your sync is Git.** Push to GitHub, GitLab, or your own server. You control where your data lives.
@@ -25,7 +25,7 @@ No vendor lock-in. No monthly fee. No telemetry.
 
 ## What It Looks Like
 
-Gitsidian is a web app with a clean, dark interface built around three panels:
+CommitPaper is a web app with a clean, dark interface built around three panels:
 
 | Panel               | What it does                                                                          |
 | ------------------- | ------------------------------------------------------------------------------------- |
@@ -76,13 +76,13 @@ See the shape of your thinking at a glance.
 
 ### Git awareness
 
-Gitsidian reads your Git status directly from the filesystem:
+CommitPaper reads your Git status directly from the filesystem:
 
 - **See your branch** — the current branch name is read from `.git/HEAD` and displayed in the sidebar and status bar.
 - **Modified file count** — see how many files have been changed at a glance.
 - **Terminal guidance** — the Git panel shows the commands you need to commit and push from your terminal.
 
-For full Git operations (commit, push, pull, branch), use your terminal or favourite Git client alongside Gitsidian.
+For full Git operations (commit, push, pull, branch), use your terminal or favourite Git client alongside CommitPaper.
 
 ### Daily notes
 
@@ -108,7 +108,7 @@ Templates support variables that auto-fill:
 
 ### Rich content
 
-Gitsidian goes beyond basic Markdown:
+CommitPaper goes beyond basic Markdown:
 
 **Callouts** — Obsidian-style admonitions for notes, warnings, tips, and more:
 
@@ -198,17 +198,17 @@ The **Properties** panel gives you a visual editor for YAML frontmatter — add,
 
 ## How It Works
 
-Gitsidian runs entirely in your browser using the **File System Access API**.
+CommitPaper runs entirely in your browser using the **File System Access API**.
 
 **Frontend:** React 19 with TypeScript. The editor is CodeMirror 6 with 10 custom extensions for live preview, wikilinks, autocomplete, math, diagrams, callouts, and more. State is managed with Zustand. The graph is rendered with Cytoscape.js.
 
-**File Access:** The browser's File System Access API lets Gitsidian read and write files directly on your filesystem — no server needed. You pick a folder, grant permission, and Gitsidian works with your files directly.
+**File Access:** The browser's File System Access API lets CommitPaper read and write files directly on your filesystem — no server needed. You pick a folder, grant permission, and CommitPaper works with your files directly.
 
 **Search:** Client-side full-text search powered by MiniSearch, with fuzzy matching and ranked results.
 
-**Offline:** Gitsidian is a Progressive Web App. Once loaded, it works fully offline.
+**Offline:** CommitPaper is a Progressive Web App. Once loaded, it works fully offline.
 
-Your vault is just a folder on your filesystem. Gitsidian reads and writes plain `.md` files. Nothing is stored in a database. Nothing is uploaded anywhere. If you stop using Gitsidian, your notes are still right where you left them.
+Your vault is just a folder on your filesystem. CommitPaper reads and writes plain `.md` files. Nothing is stored in a database. Nothing is uploaded anywhere. If you stop using CommitPaper, your notes are still right where you left them.
 
 ---
 
@@ -221,8 +221,8 @@ Your vault is just a folder on your filesystem. Gitsidian reads and writes plain
 - [Node.js](https://nodejs.org) 18+
 
 ```bash
-git clone https://github.com/IainMcl/gitsidian.git
-cd gitsidian
+git clone https://github.com/IainMcl/commitpaper.git
+cd commitpaper
 npm install
 ```
 
@@ -283,10 +283,10 @@ Produces a static site in `dist/`. Deploy to any web server.
 ## FAQ
 
 **Is this a replacement for Obsidian?**
-It's inspired by Obsidian but takes a different approach. Where Obsidian uses its own sync service, Gitsidian uses Git. Where Obsidian has a plugin ecosystem, Gitsidian has the features built in. If you want your notes in a Git repo with no extra setup, Gitsidian is for you.
+It's inspired by Obsidian but takes a different approach. Where Obsidian uses its own sync service, CommitPaper uses Git. Where Obsidian has a plugin ecosystem, CommitPaper has the features built in. If you want your notes in a Git repo with no extra setup, CommitPaper is for you.
 
 **Does it work with existing Obsidian vaults?**
-Yes. Gitsidian reads standard Markdown files and supports Obsidian-flavoured syntax including wikilinks, callouts, and frontmatter. Point it at your existing vault folder.
+Yes. CommitPaper reads standard Markdown files and supports Obsidian-flavoured syntax including wikilinks, callouts, and frontmatter. Point it at your existing vault folder.
 
 **What browsers are supported?**
 Chrome 86+ and Edge 86+ (requires the File System Access API). Firefox and Safari are not currently supported.
@@ -295,16 +295,16 @@ Chrome 86+ and Edge 86+ (requires the File System Access API). Firefox and Safar
 Yes. MIT licensed, free forever.
 
 **Where is my data stored?**
-On your filesystem, in the folder you choose. Gitsidian doesn't store data anywhere else. Nothing is uploaded. Nothing leaves your browser.
+On your filesystem, in the folder you choose. CommitPaper doesn't store data anywhere else. Nothing is uploaded. Nothing leaves your browser.
 
 **Can I use it offline?**
-Absolutely. Once loaded, Gitsidian works fully offline as a Progressive Web App. Writing, searching, and organising are fully local.
+Absolutely. Once loaded, CommitPaper works fully offline as a Progressive Web App. Writing, searching, and organising are fully local.
 
-**Can I commit and push from Gitsidian?**
+**Can I commit and push from CommitPaper?**
 Not directly — browsers can't run Git operations. The Git panel shows your branch and modified files, then guides you to use your terminal for commits and pushes.
 
 **How is it different from VS Code + Markdown?**
-Gitsidian is purpose-built for note-taking. It has wikilinks, backlinks, a knowledge graph, daily notes, templates, callouts, and a live preview that VS Code doesn't offer out of the box. It's also much lighter than VS Code.
+CommitPaper is purpose-built for note-taking. It has wikilinks, backlinks, a knowledge graph, daily notes, templates, callouts, and a live preview that VS Code doesn't offer out of the box. It's also much lighter than VS Code.
 
 ---
 

@@ -13,7 +13,7 @@ import type { FileTreeNode } from "../../lib/api";
 function useStarred() {
   const [starred, setStarred] = useState<string[]>(() => {
     try {
-      return JSON.parse(localStorage.getItem("gitsidian-starred") || "[]");
+      return JSON.parse(localStorage.getItem("commitpaper-starred") || "[]");
     } catch {
       return [];
     }
@@ -24,7 +24,7 @@ function useStarred() {
       const next = prev.includes(path)
         ? prev.filter((p) => p !== path)
         : [...prev, path];
-      localStorage.setItem("gitsidian-starred", JSON.stringify(next));
+      localStorage.setItem("commitpaper-starred", JSON.stringify(next));
       return next;
     });
   }, []);

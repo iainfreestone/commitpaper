@@ -1,6 +1,6 @@
 // ============================================================
 // File System Access API adapter
-// Browser-native file operations for Gitsidian
+// Browser-native file operations for CommitPaper
 // ============================================================
 
 import { buildSearchIndex, searchIndex, addToIndex } from "./search";

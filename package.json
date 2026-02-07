@@ -1,8 +1,8 @@
 {
-  "name": "gitsidian-web",
+  "name": "commitpaper",
   "version": "0.1.0",
   "private": true,
-  "description": "Gitsidian — browser-based Obsidian-like note editor for Git repos",
+  "description": "CommitPaper — commit your thoughts to paper, version-controlled with Git",
   "type": "module",
   "scripts": {
     "dev": "vite",

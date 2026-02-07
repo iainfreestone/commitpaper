@@ -1,4 +1,4 @@
-# Gitsidian
+# CommitPaper
 
 **Git-native personal knowledge management — in your browser.** An Obsidian-inspired web app where your notes are just files on your filesystem. No cloud accounts, no subscriptions, no proprietary formats.
 
@@ -55,8 +55,8 @@ The File System Access API is required for direct filesystem read/write:
 ### Install
 
 ```bash
-git clone https://github.com/IainMcl/gitsidian.git
-cd gitsidian
+git clone https://github.com/IainMcl/commitpaper.git
+cd commitpaper
 npm install
 ```
 
@@ -80,14 +80,14 @@ Output is in `dist/`. Serve with any static file server.
 
 ## How It Works
 
-Gitsidian runs entirely in the browser. When you click **Open Vault**, the browser's `showDirectoryPicker()` API lets you select a folder. Gitsidian then reads and writes `.md` files directly on your filesystem — no server, no uploads, nothing leaves your machine.
+CommitPaper runs entirely in the browser. When you click **Open Vault**, the browser's `showDirectoryPicker()` API lets you select a folder. CommitPaper then reads and writes `.md` files directly on your filesystem — no server, no uploads, nothing leaves your machine.
 
 - **File System Access API** replaces the traditional backend for all file operations
 - **MiniSearch** provides client-side full-text search (replaces server-side Tantivy)
 - **Polling** (every 3s) detects external file changes (replaces native file watching)
 - **Git status** is read-only — branch name from `.git/HEAD`, modified file count. Use your terminal or Git client for commits, pushes, and pulls.
 
-Your vault is just a folder. If you stop using Gitsidian, your notes are plain Markdown files right where you left them.
+Your vault is just a folder. If you stop using CommitPaper, your notes are plain Markdown files right where you left them.
 
 ---
 
@@ -110,7 +110,7 @@ Your vault is just a folder. If you stop using Gitsidian, your notes are plain M
 ## Project Structure
 
 ```
-gitsidian/
+commitpaper/
 ├── public/              # Static assets, manifest, favicon
 ├── src/
 │   ├── components/      # React components

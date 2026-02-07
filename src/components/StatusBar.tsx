@@ -47,7 +47,7 @@ export function StatusBar() {
             {displayPath}
           </div>
         )}
-        <div className="status-bar-item">Gitsidian Web</div>
+        <div className="status-bar-item">CommitPaper</div>
       </div>
     </div>
   );
