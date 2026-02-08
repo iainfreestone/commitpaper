@@ -4,242 +4,218 @@ import React, {
   useImperativeHandle,
   forwardRef,
 } from "react";
-import { EditorState } from "@codemirror/state";
-import {
-  EditorView,
-  keymap,
-  drawSelection,
-  highlightActiveLine,
-  lineNumbers,
-  highlightActiveLineGutter,
-} from "@codemirror/view";
-import {
-  defaultKeymap,
-  history,
-  historyKeymap,
-  indentWithTab,
-} from "@codemirror/commands";
-import { markdown, markdownLanguage } from "@codemirror/lang-markdown";
-import {
-  syntaxHighlighting,
-  defaultHighlightStyle,
-  bracketMatching,
-  indentOnInput,
-} from "@codemirror/language";
-import { closeBrackets, closeBracketsKeymap } from "@codemirror/autocomplete";
-import { searchKeymap, highlightSelectionMatches } from "@codemirror/search";
-import { oneDark } from "@codemirror/theme-one-dark";
+import { Crepe } from "@milkdown/crepe";
+import { replaceAll, insert } from "@milkdown/kit/utils";
+import { editorViewCtx, prosePluginsCtx } from "@milkdown/kit/core";
+import { TextSelection } from "@milkdown/kit/prose/state";
 import { useEditorStore } from "../../stores/editorStore";
-import { wikilinkPlugin, wikilinkTheme } from "./extensions/wikilinks";
-import { livePreviewPlugin, livePreviewTheme } from "./extensions/livePreview";
-import {
-  wikilinkAutocomplete,
-  wikilinkAutocompleteTheme,
-} from "./extensions/wikilinkAutocomplete";
-import {
-  wikilinkHoverPreview,
-  hoverPreviewTheme,
-} from "./extensions/hoverPreview";
-import { checkboxPlugin, checkboxTheme } from "./extensions/checkboxes";
-import { autoBracketKeymap } from "./extensions/autoBrackets";
-import { calloutPlugin, calloutTheme } from "./extensions/callouts";
-import { mathPlugin, mathTheme } from "./extensions/mathRendering";
-import { mermaidPlugin, mermaidTheme } from "./extensions/mermaidRendering";
-import { embedPlugin, embedTheme } from "./extensions/noteEmbed";
-import { formattingKeymap } from "./extensions/formatting";
-import { slashCommandExtension } from "./extensions/slashCommands";
-import { bubbleMenuPlugin } from "./extensions/bubbleMenu";
-import { smartListKeymap } from "./extensions/smartLists";
 import { saveBinaryFile } from "../../lib/api";
 
+// Custom ProseMirror plugins
+import { wikilinkPlugin } from "./extensions/wikilinkPlugin";
+import { calloutPlugin } from "./extensions/calloutPlugin";
+import { embedPlugin } from "./extensions/embedPlugin";
+import { mermaidPlugin } from "./extensions/mermaidPlugin";
+
+// Crepe theme styles
+import "@milkdown/crepe/theme/common/style.css";
+import "@milkdown/crepe/theme/frame-dark.css";
+
 interface EditorProps {
-  content: string;
   filePath: string;
 }
 
 export interface EditorHandle {
-  getView: () => EditorView | null;
+  getCrepe: () => Crepe | null;
+  getMarkdown: () => string;
 }
 
 export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor(
-  { content, filePath },
+  { filePath },
   ref,
 ) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const viewRef = useRef<EditorView | null>(null);
+  const crepeRef = useRef<Crepe | null>(null);
+  const readyRef = useRef(false);
   const setContent = useEditorStore((s) => s.setContent);
   const saveFile = useEditorStore((s) => s.saveFile);
   const setWordCount = useEditorStore((s) => s.setWordCount);
 
   useImperativeHandle(ref, () => ({
-    getView: () => viewRef.current,
+    getCrepe: () => crepeRef.current,
+    getMarkdown: () => {
+      if (!readyRef.current || !crepeRef.current) return "";
+      try {
+        return crepeRef.current.getMarkdown();
+      } catch {
+        return "";
+      }
+    },
   }));
 
   useEffect(() => {
     if (!containerRef.current) return;
+    let destroyed = false;
 
-    const updateListener = EditorView.updateListener.of((update) => {
-      if (update.docChanged) {
-        const text = update.state.doc.toString();
-        setContent(text);
-        const words = text.trim() ? text.trim().split(/\s+/).length : 0;
-        setWordCount(words);
-      }
-    });
+    // Read initial content from the store once; don't pass as prop to avoid
+    // re-rendering the entire Editor component on every keystroke.
+    const initialContent = useEditorStore.getState().content;
 
-    const saveKeymap = keymap.of([
-      {
-        key: "Mod-s",
-        run: () => {
-          saveFile();
-          return true;
+    const crepe = new Crepe({
+      root: containerRef.current,
+      defaultValue: initialContent,
+      features: {
+        [Crepe.Feature.CodeMirror]: true,
+        [Crepe.Feature.ListItem]: true,
+        [Crepe.Feature.LinkTooltip]: true,
+        [Crepe.Feature.ImageBlock]: true,
+        [Crepe.Feature.BlockEdit]: true,
+        [Crepe.Feature.Placeholder]: true,
+        [Crepe.Feature.Toolbar]: true,
+        [Crepe.Feature.Table]: true,
+        [Crepe.Feature.Latex]: true,
+        [Crepe.Feature.Cursor]: true,
+      },
+      featureConfigs: {
+        [Crepe.Feature.Placeholder]: {
+          text: "Start writing, or type '/' for commands...",
+          mode: "doc",
+        },
+        [Crepe.Feature.Latex]: {
+          katexOptions: { throwOnError: false },
+        },
+        [Crepe.Feature.ImageBlock]: {
+          onUpload: async (file: File): Promise<string> => {
+            const ext = file.name.split(".").pop() || "png";
+            const imagePath = `attachments/pasted-${Date.now()}.${ext}`;
+            try {
+              const buffer = await file.arrayBuffer();
+              await saveBinaryFile(imagePath, Array.from(new Uint8Array(buffer)));
+              return imagePath;
+            } catch (err) {
+              console.error("Failed to upload image:", err);
+              return "";
+            }
+          },
         },
       },
-    ]);
+    });
 
-    const state = EditorState.create({
-      doc: content,
-      extensions: [
-        lineNumbers(),
-        highlightActiveLineGutter(),
-        history(),
-        drawSelection(),
-        indentOnInput(),
-        bracketMatching(),
-        closeBrackets(),
-        highlightActiveLine(),
-        highlightSelectionMatches(),
-        markdown({ base: markdownLanguage }),
-        syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
-        oneDark,
+    // Inject custom ProseMirror plugins before create
+    crepe.editor.config((ctx) => {
+      ctx.update(prosePluginsCtx, (prev) => [
+        ...prev,
         wikilinkPlugin,
-        wikilinkTheme,
-        livePreviewPlugin,
-        livePreviewTheme,
-        wikilinkAutocomplete,
-        wikilinkAutocompleteTheme,
-        wikilinkHoverPreview,
-        hoverPreviewTheme,
-        checkboxPlugin,
-        checkboxTheme,
-        autoBracketKeymap,
         calloutPlugin,
-        calloutTheme,
-        mathPlugin,
-        mathTheme,
-        mermaidPlugin,
-        mermaidTheme,
         embedPlugin,
-        embedTheme,
-        formattingKeymap, // Must come before default keymaps
-        smartListKeymap, // Must come before indentWithTab
-        ...slashCommandExtension,
-        bubbleMenuPlugin,
-        saveKeymap,
-        keymap.of([
-          ...defaultKeymap,
-          ...historyKeymap,
-          ...searchKeymap,
-          ...closeBracketsKeymap,
-          indentWithTab,
-        ]),
-        updateListener,
-        EditorView.lineWrapping,
-      ],
+        mermaidPlugin,
+      ]);
     });
 
-    const view = new EditorView({
-      state,
-      parent: containerRef.current,
-    });
+    crepe.create().then(() => {
+      if (destroyed) {
+        crepe.destroy();
+        return;
+      }
 
-    viewRef.current = view;
+      crepeRef.current = crepe;
+      readyRef.current = true;
 
-    const words = content.trim() ? content.trim().split(/\s+/).length : 0;
-    setWordCount(words);
-
-    const handleGotoLine = (e: Event) => {
-      const detail = (e as CustomEvent).detail;
-      if (detail?.line && viewRef.current) {
-        const line = viewRef.current.state.doc.line(
-          Math.min(detail.line, viewRef.current.state.doc.lines),
-        );
-        viewRef.current.dispatch({
-          selection: { anchor: line.from },
-          scrollIntoView: true,
+      // Register listeners AFTER create so editorViewCtx is available.
+      // Debounce the store sync so rapid edits don't cause re-render storms.
+      let syncTimer: ReturnType<typeof setTimeout> | null = null;
+      crepe.on((listener) => {
+        listener.markdownUpdated((_ctx, markdown, _prevMarkdown) => {
+          if (syncTimer) clearTimeout(syncTimer);
+          syncTimer = setTimeout(() => {
+            setContent(markdown);
+            const words = markdown.trim()
+              ? markdown.trim().split(/\s+/).length
+              : 0;
+            setWordCount(words);
+          }, 100);
         });
-        viewRef.current.focus();
+      });
+
+      // Initial word count
+      const words = initialContent.trim()
+        ? initialContent.trim().split(/\s+/).length
+        : 0;
+      setWordCount(words);
+    });
+
+    // Handle Ctrl+S save
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "s") {
+        e.preventDefault();
+        saveFile();
       }
     };
-    window.addEventListener("editor-goto-line", handleGotoLine);
+    containerRef.current.addEventListener("keydown", handleKeyDown);
 
+    // Handle editor-set-content events
     const handleSetContent = (e: Event) => {
       const detail = (e as CustomEvent).detail;
-      if (detail?.content != null && viewRef.current) {
-        viewRef.current.dispatch({
-          changes: {
-            from: 0,
-            to: viewRef.current.state.doc.length,
-            insert: detail.content,
-          },
-        });
+      if (detail?.content != null && readyRef.current && crepeRef.current) {
+        crepeRef.current.editor.action(replaceAll(detail.content));
       }
     };
     window.addEventListener("editor-set-content", handleSetContent);
 
+    // Handle editor-insert-template events
     const handleInsertTemplate = (e: Event) => {
       const detail = (e as CustomEvent).detail;
-      if (detail?.content && viewRef.current) {
-        const cursor = viewRef.current.state.selection.main.head;
-        viewRef.current.dispatch({
-          changes: { from: cursor, insert: detail.content },
-        });
-        viewRef.current.focus();
+      if (detail?.content && readyRef.current && crepeRef.current) {
+        crepeRef.current.editor.action(insert(detail.content));
       }
     };
     window.addEventListener("editor-insert-template", handleInsertTemplate);
 
-    // Handle image paste from clipboard
-    const handlePaste = async (e: ClipboardEvent) => {
-      if (!viewRef.current || !e.clipboardData) return;
-      const items = Array.from(e.clipboardData.items);
-      const imageItem = items.find((item) => item.type.startsWith("image/"));
-      if (!imageItem) return;
-
-      e.preventDefault();
-      const blob = imageItem.getAsFile();
-      if (!blob) return;
-
-      const ext = blob.type.split("/")[1] || "png";
-      const timestamp = Date.now();
-      const imageName = `pasted-${timestamp}.${ext}`;
-      const imagePath = `attachments/${imageName}`;
-
-      try {
-        const buffer = await blob.arrayBuffer();
-        const data = Array.from(new Uint8Array(buffer));
-        await saveBinaryFile(imagePath, data);
-        const cursor = viewRef.current.state.selection.main.head;
-        viewRef.current.dispatch({
-          changes: { from: cursor, insert: `![](${imagePath})` },
+    // Handle editor-goto-line events
+    const handleGotoLine = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (detail?.line && readyRef.current && crepeRef.current) {
+        crepeRef.current.editor.action((ctx) => {
+          const view = ctx.get(editorViewCtx);
+          const doc = view.state.doc;
+          let pos = 0;
+          let lineCount = 0;
+          doc.descendants((node, nodePos) => {
+            if (node.isBlock) {
+              lineCount++;
+              if (lineCount <= detail.line) {
+                pos = nodePos;
+              }
+            }
+            return lineCount <= detail.line;
+          });
+          view.dispatch(
+            view.state.tr.setSelection(TextSelection.near(doc.resolve(pos))),
+          );
+          view.focus();
         });
-      } catch (err) {
-        console.error("Failed to paste image:", err);
       }
     };
-    containerRef.current?.addEventListener("paste", handlePaste);
+    window.addEventListener("editor-goto-line", handleGotoLine);
+
+    const containerEl = containerRef.current;
 
     return () => {
-      window.removeEventListener("editor-goto-line", handleGotoLine);
+      destroyed = true;
+      readyRef.current = false;
+      containerEl?.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("editor-set-content", handleSetContent);
       window.removeEventListener(
         "editor-insert-template",
         handleInsertTemplate,
       );
-      containerRef.current?.removeEventListener("paste", handlePaste);
-      view.destroy();
+      window.removeEventListener("editor-goto-line", handleGotoLine);
+      if (crepeRef.current) {
+        crepeRef.current.destroy();
+        crepeRef.current = null;
+      }
     };
   }, [filePath]);
 
-  return <div ref={containerRef} style={{ height: "100%" }} />;
+  return <div ref={containerRef} className="milkdown-editor-wrapper" />;
 });

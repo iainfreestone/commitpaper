@@ -1,27 +1,14 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useRef } from "react";
 import { useEditorStore } from "../../stores/editorStore";
 import { Editor } from "./Editor";
 import type { EditorHandle } from "./Editor";
-import { FormattingToolbar } from "./FormattingToolbar";
-import type { EditorView } from "@codemirror/view";
 
 export function EditorArea() {
-  const { openTabs, activeTabPath, content, closeTab, setActiveTab } =
-    useEditorStore();
+  const openTabs = useEditorStore((s) => s.openTabs);
+  const activeTabPath = useEditorStore((s) => s.activeTabPath);
+  const closeTab = useEditorStore((s) => s.closeTab);
+  const setActiveTab = useEditorStore((s) => s.setActiveTab);
   const editorRef = useRef<EditorHandle>(null);
-  const [editorView, setEditorView] = useState<EditorView | null>(null);
-
-  // Update editorView ref when the editor mounts/changes
-  const updateEditorView = useCallback(() => {
-    const view = editorRef.current?.getView() ?? null;
-    setEditorView(view);
-  }, []);
-
-  // Poll briefly after mount to catch the view once CodeMirror initialises
-  useEffect(() => {
-    const timer = setTimeout(updateEditorView, 50);
-    return () => clearTimeout(timer);
-  }, [activeTabPath, updateEditorView]);
 
   return (
     <div className="editor-area">
@@ -51,14 +38,12 @@ export function EditorArea() {
       <div className="editor-container">
         {activeTabPath ? (
           <>
-            <FormattingToolbar editorView={editorView} />
             <Editor
               ref={editorRef}
               key={
                 openTabs.find((t) => t.path === activeTabPath)?.id ??
                 activeTabPath
               }
-              content={content}
               filePath={activeTabPath}
             />
           </>
