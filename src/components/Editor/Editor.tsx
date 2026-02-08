@@ -27,9 +27,8 @@ import { embedPlugin } from "./extensions/embedPlugin";
 import { linkClickPlugin } from "./extensions/linkClickPlugin";
 import { mermaidPlugin } from "./extensions/mermaidPlugin";
 
-// Crepe theme styles
+// Crepe theme styles (structural only — colors driven by app theme variables)
 import "@milkdown/crepe/theme/common/style.css";
-import "@milkdown/crepe/theme/frame-dark.css";
 
 interface EditorProps {
   filePath: string;

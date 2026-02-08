@@ -1,5 +1,7 @@
+@import "./themes.css";
+
 :root {
-  /* Dark theme (default) */
+  /* Fallback values (overridden by [data-theme] in themes.css) */
   --bg-primary: #1e1e2e;
   --bg-secondary: #181825;
   --bg-tertiary: #11111b;
@@ -74,7 +76,7 @@ body,
 
 /* Selection */
 ::selection {
-  background: rgba(137, 180, 250, 0.3);
+  background: color-mix(in srgb, var(--accent) 30%, transparent);
 }
 
 /* Button base */
@@ -2003,4 +2005,130 @@ textarea:focus {
 .editor-mode-toggle:hover {
   color: var(--text-primary);
   border-color: var(--accent);
+}
+
+/* ============================================================
+   Theme Selector
+   ============================================================ */
+
+.theme-selector {
+  position: relative;
+}
+
+.theme-toggle-btn {
+  background: none;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 1px 8px;
+  font-size: 11px;
+  font-family: var(--font-mono);
+  transition:
+    color 0.15s,
+    border-color 0.15s;
+  white-space: nowrap;
+}
+
+.theme-toggle-btn:hover {
+  color: var(--text-primary);
+  border-color: var(--accent);
+}
+
+.theme-dropdown {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  right: 0;
+  min-width: 200px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  padding: 4px 0;
+  z-index: 1000;
+  font-size: 13px;
+}
+
+.theme-dropdown-header {
+  padding: 8px 12px 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.theme-dropdown-section {
+  padding: 6px 12px 2px;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-top: 1px solid var(--border-color);
+  margin-top: 2px;
+}
+
+.theme-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 6px 12px;
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.1s;
+}
+
+.theme-option:hover {
+  background: var(--bg-hover);
+}
+
+.theme-option.active {
+  color: var(--accent);
+}
+
+.theme-check {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--accent);
+}
+
+.theme-swatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1px solid var(--border-active);
+  flex-shrink: 0;
+}
+
+/* Swatch preview colors for each theme */
+.theme-swatch[data-theme-preview="catppuccin-mocha"] {
+  background: #89b4fa;
+}
+.theme-swatch[data-theme-preview="catppuccin-latte"] {
+  background: #1e66f5;
+}
+.theme-swatch[data-theme-preview="nord-dark"] {
+  background: #88c0d0;
+}
+.theme-swatch[data-theme-preview="nord-light"] {
+  background: #5e81ac;
+}
+.theme-swatch[data-theme-preview="frame-dark"] {
+  background: #b5b5b5;
+}
+.theme-swatch[data-theme-preview="frame-light"] {
+  background: #333333;
+}
+.theme-swatch[data-theme-preview="crepe-dark"] {
+  background: #f4bd6f;
+}
+.theme-swatch[data-theme-preview="crepe-light"] {
+  background: #805610;
 }

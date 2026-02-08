@@ -6,6 +6,9 @@ import LandingPage from "./pages/LandingPage";
 import "./styles/global.css";
 import "katex/dist/katex.min.css";
 
+// Initialize theme before React renders (sets data-theme on <html>)
+import "./stores/themeStore";
+
 function Root() {
   return (
     <BrowserRouter>
@@ -20,5 +23,5 @@ function Root() {
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <Root />
-  </React.StrictMode>
+  </React.StrictMode>,
 );

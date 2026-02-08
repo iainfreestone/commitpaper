@@ -1,0 +1,222 @@
+/* ============================================================
+   Theme Definitions
+   Each theme sets the app-wide CSS variables on :root via
+   [data-theme]. The Milkdown --crepe-* tokens are bridged in
+   global.css and follow automatically.
+   ============================================================ */
+
+/* ─── Catppuccin Mocha (default dark) ────────────────────── */
+:root[data-theme="catppuccin-mocha"] {
+  --bg-primary: #1e1e2e;
+  --bg-secondary: #181825;
+  --bg-tertiary: #11111b;
+  --bg-surface: #313244;
+  --bg-hover: #45475a;
+  --bg-active: #585b70;
+
+  --text-primary: #cdd6f4;
+  --text-secondary: #a6adc8;
+  --text-muted: #6c7086;
+  --text-accent: #89b4fa;
+
+  --border-color: #313244;
+  --border-active: #585b70;
+
+  --accent: #89b4fa;
+  --accent-hover: #74c7ec;
+  --green: #a6e3a1;
+  --red: #f38ba8;
+  --yellow: #f9e2af;
+  --orange: #fab387;
+  --purple: #cba6f7;
+  --teal: #94e2d5;
+}
+
+/* ─── Catppuccin Latte (light) ───────────────────────────── */
+:root[data-theme="catppuccin-latte"] {
+  --bg-primary: #eff1f5;
+  --bg-secondary: #e6e9ef;
+  --bg-tertiary: #dce0e8;
+  --bg-surface: #ccd0da;
+  --bg-hover: #bcc0cc;
+  --bg-active: #acb0be;
+
+  --text-primary: #4c4f69;
+  --text-secondary: #5c5f77;
+  --text-muted: #8c8fa1;
+  --text-accent: #1e66f5;
+
+  --border-color: #ccd0da;
+  --border-active: #acb0be;
+
+  --accent: #1e66f5;
+  --accent-hover: #209fb5;
+  --green: #40a02b;
+  --red: #d20f39;
+  --yellow: #df8e1d;
+  --orange: #fe640b;
+  --purple: #8839ef;
+  --teal: #179299;
+}
+
+/* ─── Nord Dark ──────────────────────────────────────────── */
+:root[data-theme="nord-dark"] {
+  --bg-primary: #2e3440;
+  --bg-secondary: #272c36;
+  --bg-tertiary: #21262e;
+  --bg-surface: #3b4252;
+  --bg-hover: #434c5e;
+  --bg-active: #4c566a;
+
+  --text-primary: #eceff4;
+  --text-secondary: #d8dee9;
+  --text-muted: #7b88a1;
+  --text-accent: #88c0d0;
+
+  --border-color: #3b4252;
+  --border-active: #4c566a;
+
+  --accent: #88c0d0;
+  --accent-hover: #8fbcbb;
+  --green: #a3be8c;
+  --red: #bf616a;
+  --yellow: #ebcb8b;
+  --orange: #d08770;
+  --purple: #b48ead;
+  --teal: #8fbcbb;
+}
+
+/* ─── Nord Light ─────────────────────────────────────────── */
+:root[data-theme="nord-light"] {
+  --bg-primary: #eceff4;
+  --bg-secondary: #e5e9f0;
+  --bg-tertiary: #d8dee9;
+  --bg-surface: #c8cfd9;
+  --bg-hover: #b8c1cf;
+  --bg-active: #a9b4c4;
+
+  --text-primary: #2e3440;
+  --text-secondary: #3b4252;
+  --text-muted: #7b88a1;
+  --text-accent: #5e81ac;
+
+  --border-color: #c8cfd9;
+  --border-active: #a9b4c4;
+
+  --accent: #5e81ac;
+  --accent-hover: #81a1c1;
+  --green: #a3be8c;
+  --red: #bf616a;
+  --yellow: #ebcb8b;
+  --orange: #d08770;
+  --purple: #b48ead;
+  --teal: #8fbcbb;
+}
+
+/* ─── Frame Dark ─────────────────────────────────────────── */
+:root[data-theme="frame-dark"] {
+  --bg-primary: #1a1a1a;
+  --bg-secondary: #121212;
+  --bg-tertiary: #0e0e0e;
+  --bg-surface: #2b2b2b;
+  --bg-hover: #333333;
+  --bg-active: #3d3d3d;
+
+  --text-primary: #e6e6e6;
+  --text-secondary: #b0b0b0;
+  --text-muted: #6b6b6b;
+  --text-accent: #b5b5b5;
+
+  --border-color: #2b2b2b;
+  --border-active: #3d3d3d;
+
+  --accent: #b5b5b5;
+  --accent-hover: #cfcfcf;
+  --green: #8fbf7f;
+  --red: #e06060;
+  --yellow: #d4b876;
+  --orange: #c49060;
+  --purple: #a88fbd;
+  --teal: #7fbfb5;
+}
+
+/* ─── Frame Light ────────────────────────────────────────── */
+:root[data-theme="frame-light"] {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f7f7f7;
+  --bg-tertiary: #ededed;
+  --bg-surface: #e0e0e0;
+  --bg-hover: #d5d5d5;
+  --bg-active: #cacaca;
+
+  --text-primary: #1a1a1a;
+  --text-secondary: #4d4d4d;
+  --text-muted: #8a8a8a;
+  --text-accent: #333333;
+
+  --border-color: #e0e0e0;
+  --border-active: #cacaca;
+
+  --accent: #333333;
+  --accent-hover: #555555;
+  --green: #2e7d32;
+  --red: #c62828;
+  --yellow: #c49000;
+  --orange: #bf5600;
+  --purple: #6a1b9a;
+  --teal: #00796b;
+}
+
+/* ─── Crepe Dark ─────────────────────────────────────────── */
+:root[data-theme="crepe-dark"] {
+  --bg-primary: #1f1b16;
+  --bg-secondary: #18120b;
+  --bg-tertiary: #120e09;
+  --bg-surface: #3b342b;
+  --bg-hover: #453d33;
+  --bg-active: #504739;
+
+  --text-primary: #eae1d9;
+  --text-secondary: #d3c4b4;
+  --text-muted: #8a7e72;
+  --text-accent: #f4bd6f;
+
+  --border-color: #3b342b;
+  --border-active: #504739;
+
+  --accent: #f4bd6f;
+  --accent-hover: #f9d090;
+  --green: #b9c98a;
+  --red: #e07a6e;
+  --yellow: #e6c87a;
+  --orange: #d9a46a;
+  --purple: #c4a0d8;
+  --teal: #8ac4b8;
+}
+
+/* ─── Crepe Light ────────────────────────────────────────── */
+:root[data-theme="crepe-light"] {
+  --bg-primary: #fffdfb;
+  --bg-secondary: #fff8f4;
+  --bg-tertiary: #fff1e5;
+  --bg-surface: #e4d8cc;
+  --bg-hover: #f9ecdf;
+  --bg-active: #ede0d4;
+
+  --text-primary: #1f1b16;
+  --text-secondary: #4f4539;
+  --text-muted: #9c8f80;
+  --text-accent: #805610;
+
+  --border-color: #e4d8cc;
+  --border-active: #d3c4b4;
+
+  --accent: #805610;
+  --accent-hover: #a06d18;
+  --green: #5a7a2e;
+  --red: #ba1a1a;
+  --yellow: #8a6b1a;
+  --orange: #935c00;
+  --purple: #7a4b94;
+  --teal: #446b60;
+}
