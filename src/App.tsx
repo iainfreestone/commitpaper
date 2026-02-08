@@ -71,8 +71,38 @@ export default function App() {
     }
   }, [vault]);
 
-  // Handle wikilink clicks
+  // Handle internal note link clicks (standard markdown links to .md files)
   useEffect(() => {
+    const handleLinkClick = async (e: MouseEvent) => {
+      const anchor = (e.target as HTMLElement).closest("a[href]");
+      if (!anchor) return;
+      const href = anchor.getAttribute("href");
+      if (!href) return;
+
+      // Skip external URLs
+      if (href.startsWith("http://") || href.startsWith("https://")) return;
+      // Skip pure anchors
+      if (href.startsWith("#")) return;
+
+      // This is an internal note link — prevent default navigation
+      e.preventDefault();
+      e.stopPropagation();
+
+      try {
+        // Try to resolve as a vault path first
+        const path = await resolveWikilink(href);
+        if (path) {
+          useEditorStore.getState().openFile(path);
+        } else {
+          // Try opening directly (already a valid path)
+          useEditorStore.getState().openFile(href);
+        }
+      } catch {
+        useEditorStore.getState().openFile(href);
+      }
+    };
+
+    // Also handle legacy wikilink-click events (from MarkdownPreview)
     const handleWikilinkClick = async (e: Event) => {
       const target = (e as CustomEvent).detail?.target;
       if (!target) return;
@@ -87,9 +117,13 @@ export default function App() {
         useEditorStore.getState().openFile(`${target}.md`);
       }
     };
+
+    document.addEventListener("click", handleLinkClick, true);
     window.addEventListener("wikilink-click", handleWikilinkClick);
-    return () =>
+    return () => {
+      document.removeEventListener("click", handleLinkClick, true);
       window.removeEventListener("wikilink-click", handleWikilinkClick);
+    };
   }, [vault]);
 
   // Global keyboard shortcuts
@@ -120,15 +154,32 @@ export default function App() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [saveFile]);
 
-  // Warn before unload if dirty
+  // Save before unload (best-effort) and warn if dirty
   useEffect(() => {
     const handler = (e: BeforeUnloadEvent) => {
-      if (useEditorStore.getState().isDirty) {
+      const state = useEditorStore.getState();
+      if (state.isDirty) {
+        // Attempt to save (async, may not complete but best effort)
+        state.saveFile();
         e.preventDefault();
       }
     };
     window.addEventListener("beforeunload", handler);
     return () => window.removeEventListener("beforeunload", handler);
+  }, []);
+
+  // Save when browser tab loses focus (user switches apps/tabs)
+  useEffect(() => {
+    const handler = () => {
+      if (document.visibilityState === "hidden") {
+        const state = useEditorStore.getState();
+        if (state.isDirty && state.activeTabPath) {
+          state.saveFile();
+        }
+      }
+    };
+    document.addEventListener("visibilitychange", handler);
+    return () => document.removeEventListener("visibilitychange", handler);
   }, []);
 
   if (restoringVault) {

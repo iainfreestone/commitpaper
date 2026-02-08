@@ -1,18 +1,23 @@
 import React, {
   useEffect,
   useRef,
+  useState,
+  useCallback,
   useImperativeHandle,
   forwardRef,
 } from "react";
 import { Crepe } from "@milkdown/crepe";
 import { replaceAll, insert } from "@milkdown/kit/utils";
-import { editorViewCtx, prosePluginsCtx } from "@milkdown/kit/core";
+import { editorViewCtx, commandsCtx, prosePluginsCtx } from "@milkdown/kit/core";
 import { TextSelection } from "@milkdown/kit/prose/state";
-import { useEditorStore } from "../../stores/editorStore";
-import { saveBinaryFile } from "../../lib/api";
+import {
+  useEditorStore,
+  registerEditorContentProvider,
+} from "../../stores/editorStore";
+import { saveBinaryFile, writeFile, reindexFile } from "../../lib/api";
+import { NotePicker } from "./NotePicker";
 
 // Custom ProseMirror plugins
-import { wikilinkPlugin } from "./extensions/wikilinkPlugin";
 import { calloutPlugin } from "./extensions/calloutPlugin";
 import { embedPlugin } from "./extensions/embedPlugin";
 import { mermaidPlugin } from "./extensions/mermaidPlugin";
@@ -24,6 +29,8 @@ import "@milkdown/crepe/theme/frame-dark.css";
 interface EditorProps {
   filePath: string;
 }
+
+const linkIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>`;
 
 export interface EditorHandle {
   getCrepe: () => Crepe | null;
@@ -41,6 +48,60 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor(
   const saveFile = useEditorStore((s) => s.saveFile);
   const setWordCount = useEditorStore((s) => s.setWordCount);
 
+  // NotePicker state
+  const [notePickerOpen, setNotePickerOpen] = useState(false);
+  const [notePickerAnchor, setNotePickerAnchor] = useState({ x: 0, y: 0 });
+
+  const openNotePicker = useCallback((fromSlashMenu = false) => {
+    if (!crepeRef.current || !readyRef.current) return;
+    try {
+      crepeRef.current.editor.action((ctx) => {
+        const view = ctx.get(editorViewCtx);
+
+        // If triggered from slash menu, delete the "/" trigger text
+        if (fromSlashMenu) {
+          const { state, dispatch } = view;
+          const { from } = state.selection;
+          // Walk backward from cursor to find the "/"
+          const textBefore = state.doc.textBetween(
+            Math.max(0, from - 20),
+            from,
+          );
+          const slashIdx = textBefore.lastIndexOf("/");
+          if (slashIdx >= 0) {
+            const deleteFrom = from - (textBefore.length - slashIdx);
+            dispatch(state.tr.delete(deleteFrom, from));
+          }
+        }
+
+        const coords = view.coordsAtPos(view.state.selection.from);
+        setNotePickerAnchor({ x: coords.left, y: coords.bottom + 4 });
+      });
+    } catch {
+      setNotePickerAnchor({ x: window.innerWidth / 2 - 140, y: window.innerHeight / 3 });
+    }
+    setNotePickerOpen(true);
+  }, []);
+
+  const handleNoteSelect = useCallback(
+    (note: { title: string; path: string }) => {
+      setNotePickerOpen(false);
+      if (!crepeRef.current || !readyRef.current) return;
+
+      // Insert a proper ProseMirror link (text node with link mark)
+      crepeRef.current.editor.action((ctx) => {
+        const view = ctx.get(editorViewCtx);
+        const { state, dispatch } = view;
+        const linkMark = state.schema.marks.link.create({ href: note.path });
+        const linkNode = state.schema.text(note.title, [linkMark]);
+        const tr = state.tr.replaceSelectionWith(linkNode, false);
+        dispatch(tr);
+        view.focus();
+      });
+    },
+    [],
+  );
+
   useImperativeHandle(ref, () => ({
     getCrepe: () => crepeRef.current,
     getMarkdown: () => {
@@ -56,6 +117,7 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor(
   useEffect(() => {
     if (!containerRef.current) return;
     let destroyed = false;
+    let syncTimer: ReturnType<typeof setTimeout> | null = null;
 
     // Read initial content from the store once; don't pass as prop to avoid
     // re-rendering the entire Editor component on every keystroke.
@@ -84,6 +146,32 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor(
         [Crepe.Feature.Latex]: {
           katexOptions: { throwOnError: false },
         },
+        [Crepe.Feature.BlockEdit]: {
+          buildMenu: (builder: any) => {
+            builder
+              .addGroup("notes", "Notes")
+              .addItem("notelink", {
+                label: "Link to Note",
+                icon: linkIcon,
+                onRun: (_ctx: any) => {
+                  openNotePicker(true);
+                },
+              });
+          },
+        },
+        [Crepe.Feature.Toolbar]: {
+          buildToolbar: (builder: any) => {
+            builder
+              .addGroup("notes", "Notes")
+              .addItem("notelink", {
+                icon: linkIcon,
+                active: () => false,
+                onRun: (_ctx: any) => {
+                  openNotePicker();
+                },
+              });
+          },
+        },
         [Crepe.Feature.ImageBlock]: {
           onUpload: async (file: File): Promise<string> => {
             const ext = file.name.split(".").pop() || "png";
@@ -101,11 +189,10 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor(
       },
     });
 
-    // Inject custom ProseMirror plugins before create
+    // Inject raw ProseMirror plugins (callouts, embeds, mermaid) before create
     crepe.editor.config((ctx) => {
       ctx.update(prosePluginsCtx, (prev) => [
         ...prev,
-        wikilinkPlugin,
         calloutPlugin,
         embedPlugin,
         mermaidPlugin,
@@ -121,19 +208,31 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor(
       crepeRef.current = crepe;
       readyRef.current = true;
 
+      // Register this editor as the live content provider.
+      // saveFile() will call this to get the freshest markdown.
+      registerEditorContentProvider(() => {
+        try {
+          return crepe.getMarkdown();
+        } catch {
+          return "";
+        }
+      });
+
       // Register listeners AFTER create so editorViewCtx is available.
       // Debounce the store sync so rapid edits don't cause re-render storms.
-      let syncTimer: ReturnType<typeof setTimeout> | null = null;
       crepe.on((listener) => {
         listener.markdownUpdated((_ctx, markdown, _prevMarkdown) => {
           if (syncTimer) clearTimeout(syncTimer);
           syncTimer = setTimeout(() => {
+            // Guard: only sync if this editor's file is still active.
+            // Prevents stale content from overwriting a newly-opened file.
+            if (useEditorStore.getState().activeTabPath !== filePath) return;
             setContent(markdown);
             const words = markdown.trim()
               ? markdown.trim().split(/\s+/).length
               : 0;
             setWordCount(words);
-          }, 100);
+          }, 300);
         });
       });
 
@@ -148,6 +247,12 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor(
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key === "s") {
         e.preventDefault();
+        // Flush any pending debounce so store is up-to-date
+        if (syncTimer) {
+          clearTimeout(syncTimer);
+          syncTimer = null;
+        }
+        // saveFile() will use getFreshContent() → crepe.getMarkdown()
         saveFile();
       }
     };
@@ -203,6 +308,38 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor(
     return () => {
       destroyed = true;
       readyRef.current = false;
+
+      // Cancel pending debounce
+      if (syncTimer) {
+        clearTimeout(syncTimer);
+        syncTimer = null;
+      }
+
+      // Flush final content to store and save before destroying.
+      // openFile/setActiveTab already await saveFile() before switching,
+      // so this is a safety net for edge cases (browser close, force unmount).
+      if (crepeRef.current) {
+        try {
+          const finalMarkdown = crepeRef.current.getMarkdown();
+          const state = useEditorStore.getState();
+          if (state.activeTabPath === filePath) {
+            // Update store directly (bypass debounce/auto-save timers)
+            useEditorStore.setState({ content: finalMarkdown });
+            // Fire-and-forget save to disk
+            if (state.isDirty) {
+              writeFile(filePath, finalMarkdown)
+                .then(() => reindexFile(filePath))
+                .catch(console.error);
+            }
+          }
+        } catch {
+          // Editor might already be in a bad state
+        }
+      }
+
+      // Unregister content provider
+      registerEditorContentProvider(null);
+
       containerEl?.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("editor-set-content", handleSetContent);
       window.removeEventListener(
@@ -217,5 +354,16 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor(
     };
   }, [filePath]);
 
-  return <div ref={containerRef} className="milkdown-editor-wrapper" />;
+  return (
+    <>
+      <div ref={containerRef} className="milkdown-editor-wrapper" />
+      {notePickerOpen && (
+        <NotePicker
+          anchor={notePickerAnchor}
+          onSelect={handleNoteSelect}
+          onClose={() => setNotePickerOpen(false)}
+        />
+      )}
+    </>
+  );
 });

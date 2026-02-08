@@ -53,13 +53,12 @@ Move your cursor away from a line and the rendered view takes over — no need t
 
 ### Link your thinking
 
-Connect ideas with `[[wikilinks]]`:
+Connect ideas with standard markdown links:
 
-- Type `[[` and an autocomplete popup shows every note in your vault.
+- Use the slash menu or toolbar to pick a note and insert a `[title](path.md)` link.
 - Click any link to jump to that note instantly.
 - Hover over a link to preview its content in a tooltip.
-- Use `[[note|custom text]]` to display a different label.
-- Embed another note's content inline with `![[note-name]]`.
+- Embed another note's content inline with `![embed](note.md)`.
 
 The **Backlinks** panel shows you every note that links to the one you're reading — so you can trace ideas in both directions.
 
@@ -67,7 +66,7 @@ The **Backlinks** panel shows you every note that links to the one you're readin
 
 The **Graph View** renders your entire vault as an interactive network:
 
-- Each note is a node. Each wikilink is an edge.
+- Each note is a node. Each link is an edge.
 - Node size scales with how many notes link to it.
 - Click any node to open that note.
 - Drag to rearrange. Scroll to zoom.
@@ -208,7 +207,7 @@ The **Properties** panel gives you a visual editor for YAML frontmatter — add,
 
 CommitPaper runs entirely in your browser using the **File System Access API**.
 
-**Frontend:** React 19 with TypeScript. The editor is CodeMirror 6 with 10 custom extensions for live preview, wikilinks, autocomplete, math, diagrams, callouts, and more. State is managed with Zustand. The graph is rendered with Cytoscape.js.
+**Frontend:** React 19 with TypeScript. The editor is Milkdown (Crepe) with custom ProseMirror plugins for live preview, note linking, math, diagrams, callouts, and more. State is managed with Zustand. The graph is rendered with Cytoscape.js.
 
 **File Access:** The browser's File System Access API lets CommitPaper read and write files directly on your filesystem — no server needed. You pick a folder, grant permission, and CommitPaper works with your files directly.
 
@@ -294,7 +293,7 @@ Produces a static site in `dist/`. Deploy to any web server.
 It's inspired by Obsidian but takes a different approach. CommitPaper works with any folder on your computer and optionally integrates with Git for version history and sync. Where Obsidian has a plugin ecosystem, CommitPaper has the features built in. If you want a lightweight, local-first note app that works with plain Markdown files, CommitPaper is for you.
 
 **Does it work with existing Obsidian vaults?**
-Yes. CommitPaper reads standard Markdown files and supports Obsidian-flavoured syntax including wikilinks, callouts, and frontmatter. Point it at your existing vault folder.
+Yes. CommitPaper reads standard Markdown files and supports callouts, frontmatter, and standard markdown links. Point it at your existing vault folder.
 
 **Do I need Git?**
 No. CommitPaper works with any folder — Git is entirely optional. But if you want version history or to sync your notes across computers, initialising a Git repo in your vault is a great way to get both.
@@ -315,7 +314,7 @@ Absolutely. Once loaded, CommitPaper works fully offline as a Progressive Web Ap
 Not directly — browsers can't run Git operations. If your vault is a Git repo, the Git panel shows your branch and modified files, then guides you to use your terminal for commits and pushes.
 
 **How is it different from VS Code + Markdown?**
-CommitPaper is purpose-built for note-taking. It has wikilinks, backlinks, a knowledge graph, daily notes, templates, callouts, and a live preview that VS Code doesn't offer out of the box. It's also much lighter than VS Code.
+CommitPaper is purpose-built for note-taking. It has backlinks, a knowledge graph, daily notes, templates, callouts, and a live preview that VS Code doesn't offer out of the box. It's also much lighter than VS Code.
 
 ---
 

@@ -190,14 +190,30 @@ export function MarkdownPreview({ content }: MarkdownPreviewProps) {
   useEffect(() => {
     if (!containerRef.current) return;
     const handleClick = (e: MouseEvent) => {
-      const el = (e.target as HTMLElement).closest("[data-wikilink]");
-      if (!el) return;
-      const target = el.getAttribute("data-wikilink");
-      if (target) {
-        window.dispatchEvent(
-          new CustomEvent("wikilink-click", { detail: { target } }),
-        );
+      // Handle legacy [[wikilink]] clicks
+      const wlEl = (e.target as HTMLElement).closest("[data-wikilink]");
+      if (wlEl) {
+        const target = wlEl.getAttribute("data-wikilink");
+        if (target) {
+          window.dispatchEvent(
+            new CustomEvent("wikilink-click", { detail: { target } }),
+          );
+        }
+        return;
       }
+
+      // Handle standard link clicks (internal .md links)
+      const anchor = (e.target as HTMLElement).closest("a[href]");
+      if (!anchor) return;
+      const href = anchor.getAttribute("href");
+      if (!href) return;
+      if (href.startsWith("http://") || href.startsWith("https://")) return;
+      if (href.startsWith("#")) return;
+      // Internal link — dispatch as wikilink-click for App.tsx to handle
+      e.preventDefault();
+      window.dispatchEvent(
+        new CustomEvent("wikilink-click", { detail: { target: href } }),
+      );
     };
     containerRef.current.addEventListener("click", handleClick);
     const container = containerRef.current;

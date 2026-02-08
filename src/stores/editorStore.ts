@@ -10,8 +10,8 @@ interface EditorStore {
 
   openFile: (path: string) => Promise<void>;
   closeTab: (path: string, force?: boolean) => void;
-  closeAllTabs: () => void;
-  setActiveTab: (path: string) => void;
+  closeAllTabs: () => Promise<void>;
+  setActiveTab: (path: string) => Promise<void>;
   setContent: (content: string) => void;
   setWordCount: (count: number) => void;
   saveFile: () => Promise<void>;
@@ -31,9 +31,38 @@ const AUTO_SAVE_DELAY = 2000;
 const TITLE_RENAME_DELAY = 800;
 let nextTabId = 1;
 
+// ─── Live editor content provider ──────────────────────────────
+// The live Crepe/ProseMirror editor is the source of truth for content.
+// Editor.tsx registers a function that returns crepe.getMarkdown().
+// All save operations use this instead of the (potentially stale) store content.
+
+let _getEditorMarkdown: (() => string) | null = null;
+
+/**
+ * Register a function that returns the live editor markdown.
+ * Called by Editor.tsx when the Crepe instance is ready, cleared on unmount.
+ */
+export function registerEditorContentProvider(fn: (() => string) | null) {
+  _getEditorMarkdown = fn;
+}
+
+/**
+ * Get the freshest content available: from the live editor if possible,
+ * otherwise fall back to the store's last-known content.
+ */
+function getFreshContent(): string {
+  if (_getEditorMarkdown) {
+    try {
+      return _getEditorMarkdown();
+    } catch {
+      // Editor might be mid-destruction
+    }
+  }
+  return useEditorStore.getState().content;
+}
+
 /** Extract the text of the first H1 heading from markdown content */
 function extractH1Title(content: string): string | null {
-  // Match the first line that starts with exactly one # followed by a space
   const match = content.match(/^#\s+(.+)$/m);
   if (!match) return null;
   const title = match[1].trim();
@@ -43,12 +72,11 @@ function extractH1Title(content: string): string | null {
 /** Sanitize a title string into a valid filename (no path separators, etc.) */
 function sanitizeFilename(title: string): string {
   return title
-    .replace(/[\\/:*?"<>|]/g, "") // remove invalid filename chars
-    .replace(/\s+/g, " ") // collapse whitespace
+    .replace(/[\\/:*?"<>|]/g, "")
+    .replace(/\s+/g, " ")
     .trim();
 }
 
-/** Whether a rename from H1 should be attempted for this path */
 let isRenaming = false;
 
 async function handleTitleRename(
@@ -64,15 +92,13 @@ async function handleTitleRename(
     /\.md$/i,
     "",
   );
-  if (sanitized.toLowerCase() === currentName.toLowerCase()) return; // already matches
+  if (sanitized.toLowerCase() === currentName.toLowerCase()) return;
 
-  // Build new path preserving directory
   const dir = currentPath.includes("/")
     ? currentPath.substring(0, currentPath.lastIndexOf("/") + 1)
     : "";
   let newPath = `${dir}${sanitized}.md`;
 
-  // Check for conflicts and add number suffix if needed
   if (await api.fileExists(newPath)) {
     let i = 1;
     while (await api.fileExists(`${dir}${sanitized} ${i}.md`)) {
@@ -83,20 +109,29 @@ async function handleTitleRename(
 
   try {
     isRenaming = true;
-    // Save current content to old path first
-    const content = store.content;
+    // Use fresh content from the live editor, not the potentially stale store
+    const content = getFreshContent();
     await api.writeFile(currentPath, content);
-    // Rename file on disk
     await api.renameFile(currentPath, newPath);
-    // Update tab state without remounting the editor
     store.renameActiveTab(currentPath, newPath);
-    // Refresh sidebar
     const vaultStore = (await import("./vaultStore")).useVaultStore.getState();
     vaultStore.refreshFileTree();
   } catch (e) {
     console.error("Failed to rename file from title:", e);
   } finally {
     isRenaming = false;
+  }
+}
+
+/** Clear all pending timers (auto-save, title rename) */
+function clearPendingTimers() {
+  if (autoSaveTimer) {
+    clearTimeout(autoSaveTimer);
+    autoSaveTimer = null;
+  }
+  if (titleRenameTimer) {
+    clearTimeout(titleRenameTimer);
+    titleRenameTimer = null;
   }
 }
 
@@ -109,6 +144,18 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
 
   openFile: async (path: string) => {
     try {
+      // Save the current file before opening a new one
+      const { activeTabPath, isDirty } = get();
+      if (activeTabPath && isDirty) {
+        await get().saveFile();
+      }
+
+      // If this file is already active, nothing to do
+      if (activeTabPath === path) return;
+
+      // Clear pending timers from the old file
+      clearPendingTimers();
+
       const content = await api.readFile(path);
       const name = path.split("/").pop() || path;
 
@@ -146,32 +193,44 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
 
     const newTabs = openTabs.filter((t) => t.path !== path);
 
-    let newActive = activeTabPath;
     if (activeTabPath === path) {
+      // Closing the active tab — switch to an adjacent tab
       const idx = openTabs.findIndex((t) => t.path === path);
-      newActive = newTabs[Math.min(idx, newTabs.length - 1)]?.path || null;
-    }
+      const newActive =
+        newTabs[Math.min(idx, newTabs.length - 1)]?.path || null;
 
-    if (newActive && newActive !== path) {
-      api.readFile(newActive).then((content) => {
+      clearPendingTimers();
+
+      if (newActive) {
+        api.readFile(newActive).then((content) => {
+          set({
+            openTabs: newTabs,
+            activeTabPath: newActive,
+            content,
+            isDirty: false,
+          });
+        });
+      } else {
         set({
           openTabs: newTabs,
-          activeTabPath: newActive,
-          content,
+          activeTabPath: null,
+          content: "",
           isDirty: false,
         });
-      });
+      }
     } else {
-      set({
-        openTabs: newTabs,
-        activeTabPath: newActive,
-        content: "",
-        isDirty: false,
-      });
+      // Closing a background tab — don't touch the active tab's content
+      set({ openTabs: newTabs });
     }
   },
 
-  closeAllTabs: () => {
+  closeAllTabs: async () => {
+    // Save current file before closing everything
+    const { isDirty, activeTabPath } = get();
+    if (activeTabPath && isDirty) {
+      await get().saveFile();
+    }
+    clearPendingTimers();
     set({
       openTabs: [],
       activeTabPath: null,
@@ -181,51 +240,64 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
     });
   },
 
-  setActiveTab: (path: string) => {
-    const { activeTabPath, isDirty, content, openTabs } = get();
+  setActiveTab: async (path: string) => {
+    const { activeTabPath, isDirty } = get();
 
+    // Don't do anything if already on this tab
+    if (activeTabPath === path) return;
+
+    // Save current file before switching
     if (activeTabPath && isDirty) {
-      api
-        .writeFile(activeTabPath, content)
-        .then(() => api.reindexFile(activeTabPath))
-        .then(() => {
-          set({
-            openTabs: get().openTabs.map((t) =>
-              t.path === activeTabPath ? { ...t, isDirty: false } : t,
-            ),
-          });
-        })
-        .catch(console.error);
+      await get().saveFile();
     }
 
-    api.readFile(path).then((content) => {
+    clearPendingTimers();
+
+    try {
+      const content = await api.readFile(path);
       set({ activeTabPath: path, content, isDirty: false });
-    });
+    } catch (e) {
+      console.error("Failed to switch tab:", e);
+      set({ activeTabPath: path });
+    }
   },
 
   setContent: (content: string) => {
-    const { activeTabPath, openTabs } = get();
-    set({
-      content,
-      isDirty: true,
-      openTabs: openTabs.map((t) =>
-        t.path === activeTabPath ? { ...t, isDirty: true } : t,
-      ),
-    });
+    const { activeTabPath, openTabs, isDirty } = get();
+
+    // Only create a new openTabs array when the dirty flag actually changes.
+    // This prevents unnecessary re-renders of EditorArea (and its tabs bar)
+    // which can destabilize Crepe's floating menus (slash menu, toolbar).
+    if (isDirty) {
+      set({ content });
+    } else {
+      set({
+        content,
+        isDirty: true,
+        openTabs: openTabs.map((t) =>
+          t.path === activeTabPath ? { ...t, isDirty: true } : t,
+        ),
+      });
+    }
+
+    // Capture the path this content belongs to, so timers can verify
+    // they're still operating on the correct file
+    const pathAtCallTime = activeTabPath;
 
     if (autoSaveTimer) clearTimeout(autoSaveTimer);
     autoSaveTimer = setTimeout(() => {
       const state = get();
-      if (state.isDirty && state.activeTabPath) {
+      // Only save if we're still on the same file
+      if (state.isDirty && state.activeTabPath && state.activeTabPath === pathAtCallTime) {
         state.saveFile();
       }
     }, AUTO_SAVE_DELAY);
 
-    // Debounced title-based rename
     if (titleRenameTimer) clearTimeout(titleRenameTimer);
     titleRenameTimer = setTimeout(() => {
       const state = get();
-      if (!state.activeTabPath) return;
+      // Only rename if we're still on the same file
+      if (!state.activeTabPath || state.activeTabPath !== pathAtCallTime) return;
       const h1 = extractH1Title(state.content);
       if (h1) {
         handleTitleRename(h1, state.activeTabPath, state);
@@ -238,18 +310,31 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
   },
 
   saveFile: async () => {
-    const { activeTabPath, content, openTabs } = get();
+    const { activeTabPath } = get();
     if (!activeTabPath) return;
+
+    // Always get the freshest content from the live editor
+    const content = getFreshContent();
+
+    // Sync store so consumers see the latest
+    set({ content });
 
     try {
       await api.writeFile(activeTabPath, content);
       await api.reindexFile(activeTabPath);
-      set({
-        isDirty: false,
-        openTabs: openTabs.map((t) =>
-          t.path === activeTabPath ? { ...t, isDirty: false } : t,
-        ),
-      });
+
+      // Only clear dirty flag if content hasn't changed during the save
+      const currentContent = getFreshContent();
+      if (currentContent === content) {
+        set({
+          isDirty: false,
+          openTabs: get().openTabs.map((t) =>
+            t.path === activeTabPath ? { ...t, isDirty: false } : t,
+          ),
+        });
+      }
+      // If content changed during save, isDirty stays true and auto-save
+      // will fire again naturally
     } catch (e) {
       console.error("Failed to save file:", e);
     }

@@ -217,12 +217,12 @@ export async function verifyPermission(
   }
 }
 
-// In-memory note index for wikilinks, backlinks, graph
+// In-memory note index for links, backlinks, graph
 interface NoteEntry {
   path: string;
   name: string; // filename without .md
   content: string;
-  wikilinks: string[]; // target names
+  links: string[]; // target paths (from standard markdown links)
 }
 
 let noteIndex: Map<string, NoteEntry> = new Map();
@@ -268,7 +268,7 @@ function getExtension(name: string): string | undefined {
   return idx > 0 ? name.substring(idx + 1) : undefined;
 }
 
-function getNoteName(path: string): string {
+export function getNoteName(path: string): string {
   return (path.split("/").pop() || path).replace(/\.md$/i, "");
 }
 
@@ -317,7 +317,7 @@ async function rebuildNoteIndex() {
           path: node.path,
           name: getNoteName(node.path),
           content: "",
-          wikilinks: [],
+          links: [],
         });
       }
       if (node.children) collectFiles(node.children);
@@ -331,7 +331,7 @@ async function rebuildNoteIndex() {
     try {
       const content = await readFile(entry.path);
       entry.content = content;
-      entry.wikilinks = extractWikilinks(content);
+      entry.links = extractLinks(content);
     } catch {
       // ignore unreadable files
     }
@@ -343,12 +343,23 @@ async function rebuildNoteIndex() {
   );
 }
 
-function extractWikilinks(content: string): string[] {
-  const re = /\[\[([^\]|]+)(?:\|[^\]]+)?\]\]/g;
+/**
+ * Extract internal markdown links from content.
+ * Matches [text](path) where path ends with .md or has no extension (treated as note link).
+ * Ignores image links ![alt](src) and external URLs (http://, https://).
+ */
+function extractLinks(content: string): string[] {
+  // Match [text](href) but not ![text](href)
+  const re = /(?<!!)\[([^\]]+)\]\(([^)]+)\)/g;
   const links: string[] = [];
   let match: RegExpExecArray | null;
   while ((match = re.exec(content)) !== null) {
-    links.push(match[1].trim());
+    const href = match[2].trim();
+    // Skip external URLs
+    if (href.startsWith("http://") || href.startsWith("https://")) continue;
+    // Skip anchors-only
+    if (href.startsWith("#")) continue;
+    links.push(href);
   }
   return links;
 }
@@ -363,9 +374,19 @@ export async function getBacklinks(path: string): Promise<string[]> {
   const backlinks: string[] = [];
   for (const entry of noteIndex.values()) {
     if (entry.path === path) continue;
-    if (
-      entry.wikilinks.some((l) => l.toLowerCase() === targetName.toLowerCase())
-    ) {
+    // Check if any link in this entry points to the target.
+    // Links can be full paths ("notes/foo.md") or just filenames ("foo.md").
+    const matches = entry.links.some((link) => {
+      const linkLower = link.toLowerCase();
+      const pathLower = path.toLowerCase();
+      // Exact path match
+      if (linkLower === pathLower) return true;
+      // Filename-only match (e.g. "foo.md" matches "notes/foo.md")
+      const linkName = getNoteName(link);
+      if (linkName.toLowerCase() === targetName.toLowerCase()) return true;
+      return false;
+    });
+    if (matches) {
       backlinks.push(entry.path);
     }
   }
@@ -377,9 +398,14 @@ export async function getNoteNames(): Promise<string[]> {
 }
 
 export async function resolveWikilink(name: string): Promise<string | null> {
-  const lower = name.toLowerCase();
+  // Resolve a note name (or path) to a full vault-relative path.
+  // Works with both bare names ("My Note") and paths ("notes/My Note.md").
+  const lower = name.toLowerCase().replace(/\.md$/i, "");
   for (const entry of noteIndex.values()) {
     if (entry.name.toLowerCase() === lower) {
+      return entry.path;
+    }
+    if (entry.path.toLowerCase() === name.toLowerCase()) {
       return entry.path;
     }
   }
@@ -391,12 +417,13 @@ export async function getGraphData(): Promise<GraphData> {
   const edges: GraphEdge[] = [];
   const backlinkCounts = new Map<string, number>();
 
-  // Count backlinks
+  // Count backlinks — normalize link targets to note names
   for (const entry of noteIndex.values()) {
-    for (const link of entry.wikilinks) {
+    for (const link of entry.links) {
+      const targetName = getNoteName(link).toLowerCase();
       backlinkCounts.set(
-        link.toLowerCase(),
-        (backlinkCounts.get(link.toLowerCase()) || 0) + 1,
+        targetName,
+        (backlinkCounts.get(targetName) || 0) + 1,
       );
     }
   }
@@ -409,8 +436,8 @@ export async function getGraphData(): Promise<GraphData> {
       backlink_count: backlinkCounts.get(entry.name.toLowerCase()) || 0,
     });
 
-    for (const link of entry.wikilinks) {
-      edges.push({ source: entry.name, target: link });
+    for (const link of entry.links) {
+      edges.push({ source: entry.name, target: getNoteName(link) });
     }
   }
 
@@ -465,7 +492,7 @@ export async function reindexFile(path: string): Promise<void> {
       path,
       name,
       content,
-      wikilinks: extractWikilinks(content),
+      links: extractLinks(content),
     };
     noteIndex.set(path, entry);
     addToIndex({ path, title: name, content });
@@ -504,7 +531,7 @@ export async function createNote(
     path,
     name,
     content,
-    wikilinks: extractWikilinks(content),
+    links: extractLinks(content),
   });
 }
 
@@ -562,7 +589,7 @@ export async function renameFile(
       path: newPath,
       name,
       content,
-      wikilinks: extractWikilinks(content),
+      links: extractLinks(content),
     });
   } catch {
     throw new Error(`Failed to rename ${oldPath} to ${newPath}`);

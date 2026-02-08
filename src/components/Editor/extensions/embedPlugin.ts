@@ -1,30 +1,45 @@
 /**
- * Milkdown/ProseMirror plugin for ![[note]] embed syntax.
+ * Milkdown/ProseMirror plugin for note embeds.
  *
- * Finds paragraphs whose text is exactly `![[notename]]` and replaces them
- * with a widget decoration that shows the embedded note's content.
+ * Supports two syntaxes:
+ * 1. ![[notename]] — legacy Obsidian-style (still parsed for backward compat)
+ * 2. ![embed](note.md) — standard image-link pointing to a .md file
+ *
+ * Finds paragraphs matching either pattern and replaces them with a widget
+ * decoration that shows the embedded note's content.
  */
 import { Plugin, PluginKey } from "@milkdown/kit/prose/state";
 import { Decoration, DecorationSet } from "@milkdown/kit/prose/view";
-import type { EditorView } from "@milkdown/kit/prose/view";
 import type { Node as ProsemirrorNode } from "@milkdown/kit/prose/model";
 import * as api from "../../../lib/api";
 
 const embedPluginKey = new PluginKey("noteEmbeds");
 
-const EMBED_RE = /^!\[\[([^\]]+)\]\]$/;
+// Legacy: ![[notename]]
+const LEGACY_EMBED_RE = /^!\[\[([^\]]+)\]\]$/;
+// Standard: ![anything](path.md) where path ends in .md
+const STANDARD_EMBED_RE = /^!\[([^\]]*)\]\(([^)]+\.md)\)$/;
 
 const embedCache = new Map<string, { content: string; ts: number }>();
 const CACHE_TTL = 5000;
 
-async function fetchEmbedContent(name: string): Promise<string> {
-  const cached = embedCache.get(name);
+async function fetchEmbedContent(pathOrName: string): Promise<string> {
+  const cached = embedCache.get(pathOrName);
   if (cached && Date.now() - cached.ts < CACHE_TTL) {
     return cached.content;
   }
   try {
-    const path = await api.resolveWikilink(name);
-    if (!path) return `Note not found: ${name}`;
+    // Try resolving as a note name first, then as a direct path
+    let path = await api.resolveWikilink(pathOrName);
+    if (!path) {
+      // Maybe it's already a full path
+      try {
+        await api.readFile(pathOrName);
+        path = pathOrName;
+      } catch {
+        return `Note not found: ${pathOrName}`;
+      }
+    }
     const content = await api.readFile(path);
 
     let body = content;
@@ -36,14 +51,14 @@ async function fetchEmbedContent(name: string): Promise<string> {
     const lines = body.split("\n").slice(0, 30);
     if (body.split("\n").length > 30) lines.push("…");
     const result = lines.join("\n");
-    embedCache.set(name, { content: result, ts: Date.now() });
+    embedCache.set(pathOrName, { content: result, ts: Date.now() });
     return result;
   } catch {
-    return `Error loading: ${name}`;
+    return `Error loading: ${pathOrName}`;
   }
 }
 
-function createEmbedWidget(noteName: string): HTMLDivElement {
+function createEmbedWidget(noteName: string, notePath?: string): HTMLDivElement {
   const wrap = document.createElement("div");
   wrap.className = "mk-embed-widget";
 
@@ -54,10 +69,10 @@ function createEmbedWidget(noteName: string): HTMLDivElement {
   header.addEventListener("click", async (e) => {
     e.preventDefault();
     try {
-      const path = await api.resolveWikilink(noteName);
-      if (path) {
+      const resolvedPath = notePath || (await api.resolveWikilink(noteName));
+      if (resolvedPath) {
         const { useEditorStore } = await import("../../../stores/editorStore");
-        useEditorStore.getState().openFile(path);
+        useEditorStore.getState().openFile(resolvedPath);
       }
     } catch {
       /* ignore */
@@ -70,7 +85,7 @@ function createEmbedWidget(noteName: string): HTMLDivElement {
   body.textContent = "Loading…";
   wrap.appendChild(body);
 
-  fetchEmbedContent(noteName).then((content) => {
+  fetchEmbedContent(notePath || noteName).then((content) => {
     body.textContent = content;
   });
 
@@ -85,20 +100,37 @@ function findEmbeds(doc: ProsemirrorNode, selection: { from: number; to: number 
     if (node.childCount !== 1 || !node.firstChild?.isText) return;
 
     const text = node.textContent.trim();
-    const match = EMBED_RE.exec(text);
-    if (!match) return;
 
-    const noteName = match[1].trim();
+    // Try legacy ![[notename]] syntax
+    let noteName: string | null = null;
+    let notePath: string | undefined;
+
+    const legacyMatch = LEGACY_EMBED_RE.exec(text);
+    if (legacyMatch) {
+      noteName = legacyMatch[1].trim();
+    }
+
+    // Try standard ![embed](path.md)
+    if (!noteName) {
+      const stdMatch = STANDARD_EMBED_RE.exec(text);
+      if (stdMatch) {
+        notePath = stdMatch[2].trim();
+        noteName = stdMatch[1].trim() || api.getNoteName(notePath);
+      }
+    }
+
+    if (!noteName) return;
+
     const nodeEnd = pos + node.nodeSize;
 
     // Don't replace when cursor is inside
     if (selection.from >= pos && selection.from <= nodeEnd) return;
 
     decos.push(
-      Decoration.widget(pos, () => createEmbedWidget(noteName), {
+      Decoration.widget(pos, () => createEmbedWidget(noteName!, notePath), {
         side: -1,
         block: true,
-        key: `embed-${noteName}`,
+        key: `embed-${notePath || noteName}`,
       }),
     );
 
