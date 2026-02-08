@@ -75,13 +75,30 @@ function markdownToHtml(md: string): string {
         .trim();
       const cleanTitle = title || type.charAt(0).toUpperCase() + type.slice(1);
       const icons: Record<string, string> = {
-        note: "📝", tip: "💡", info: "ℹ️", warning: "⚠️", danger: "🔴",
-        bug: "🐛", example: "📋", quote: "💬", success: "✅", question: "❓", failure: "❌",
+        note: "📝",
+        tip: "💡",
+        info: "ℹ️",
+        warning: "⚠️",
+        danger: "🔴",
+        bug: "🐛",
+        example: "📋",
+        quote: "💬",
+        success: "✅",
+        question: "❓",
+        failure: "❌",
       };
       const colors: Record<string, string> = {
-        note: "#89b4fa", tip: "#a6e3a1", info: "#89dceb", warning: "#f9e2af",
-        danger: "#f38ba8", bug: "#f38ba8", example: "#cba6f7", quote: "#a6adc8",
-        success: "#a6e3a1", question: "#f9e2af", failure: "#f38ba8",
+        note: "#89b4fa",
+        tip: "#a6e3a1",
+        info: "#89dceb",
+        warning: "#f9e2af",
+        danger: "#f38ba8",
+        bug: "#f38ba8",
+        example: "#cba6f7",
+        quote: "#a6adc8",
+        success: "#a6e3a1",
+        question: "#f9e2af",
+        failure: "#f38ba8",
       };
       const color = colors[type] || colors.note;
       const icon = icons[type] || icons.note;

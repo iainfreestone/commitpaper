@@ -421,10 +421,7 @@ export async function getGraphData(): Promise<GraphData> {
   for (const entry of noteIndex.values()) {
     for (const link of entry.links) {
       const targetName = getNoteName(link).toLowerCase();
-      backlinkCounts.set(
-        targetName,
-        (backlinkCounts.get(targetName) || 0) + 1,
-      );
+      backlinkCounts.set(targetName, (backlinkCounts.get(targetName) || 0) + 1);
     }
   }
 

@@ -288,7 +288,11 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
     autoSaveTimer = setTimeout(() => {
       const state = get();
       // Only save if we're still on the same file
-      if (state.isDirty && state.activeTabPath && state.activeTabPath === pathAtCallTime) {
+      if (
+        state.isDirty &&
+        state.activeTabPath &&
+        state.activeTabPath === pathAtCallTime
+      ) {
         state.saveFile();
       }
     }, AUTO_SAVE_DELAY);
@@ -297,7 +301,8 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
     titleRenameTimer = setTimeout(() => {
       const state = get();
       // Only rename if we're still on the same file
-      if (!state.activeTabPath || state.activeTabPath !== pathAtCallTime) return;
+      if (!state.activeTabPath || state.activeTabPath !== pathAtCallTime)
+        return;
       const h1 = extractH1Title(state.content);
       if (h1) {
         handleTitleRename(h1, state.activeTabPath, state);

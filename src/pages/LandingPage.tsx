@@ -162,9 +162,9 @@ export default function LandingPage() {
             <div className="feature-card-icon">&#x1F517;</div>
             <h3>Link Your Thinking</h3>
             <p>
-              Connect ideas with standard markdown links. A built-in note
-              picker shows every note in your vault. Click to navigate. The
-              Backlinks panel traces connections in both directions.
+              Connect ideas with standard markdown links. A built-in note picker
+              shows every note in your vault. Click to navigate. The Backlinks
+              panel traces connections in both directions.
             </p>
           </div>
           <div className="feature-card">
@@ -172,8 +172,8 @@ export default function LandingPage() {
             <h3>Visualise Your Knowledge</h3>
             <p>
               The Graph View renders your entire vault as an interactive
-              network. Each note is a node, each link is an edge. Click to
-              open, drag to rearrange, scroll to zoom.
+              network. Each note is a node, each link is an edge. Click to open,
+              drag to rearrange, scroll to zoom.
             </p>
           </div>
           <div className="feature-card">

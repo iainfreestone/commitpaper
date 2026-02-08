@@ -58,7 +58,10 @@ async function fetchEmbedContent(pathOrName: string): Promise<string> {
   }
 }
 
-function createEmbedWidget(noteName: string, notePath?: string): HTMLDivElement {
+function createEmbedWidget(
+  noteName: string,
+  notePath?: string,
+): HTMLDivElement {
   const wrap = document.createElement("div");
   wrap.className = "mk-embed-widget";
 
@@ -92,7 +95,10 @@ function createEmbedWidget(noteName: string, notePath?: string): HTMLDivElement 
   return wrap;
 }
 
-function findEmbeds(doc: ProsemirrorNode, selection: { from: number; to: number }) {
+function findEmbeds(
+  doc: ProsemirrorNode,
+  selection: { from: number; to: number },
+) {
   const decos: Decoration[] = [];
 
   doc.descendants((node, pos) => {

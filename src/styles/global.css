@@ -183,7 +183,9 @@ textarea:focus {
   color: var(--text-primary);
   font-size: 14px;
   cursor: pointer;
-  transition: background 0.15s, border-color 0.15s;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
   margin-bottom: 4px;
   text-align: left;
 }
@@ -225,7 +227,9 @@ textarea:focus {
   padding: 0 2px;
   line-height: 1;
   border-radius: var(--radius-sm);
-  transition: color 0.15s, background 0.15s;
+  transition:
+    color 0.15s,
+    background 0.15s;
 }
 
 .vault-close-btn:hover {
@@ -532,11 +536,9 @@ textarea:focus {
   --crepe-font-code: var(--font-mono);
 
   --crepe-shadow-1:
-    0px 1px 2px 0px rgba(0, 0, 0, 0.3),
-    0px 1px 3px 1px rgba(0, 0, 0, 0.15);
+    0px 1px 2px 0px rgba(0, 0, 0, 0.3), 0px 1px 3px 1px rgba(0, 0, 0, 0.15);
   --crepe-shadow-2:
-    0px 1px 2px 0px rgba(0, 0, 0, 0.3),
-    0px 2px 6px 2px rgba(0, 0, 0, 0.15);
+    0px 1px 2px 0px rgba(0, 0, 0, 0.3), 0px 2px 6px 2px rgba(0, 0, 0, 0.15);
 }
 
 .milkdown-editor-wrapper .milkdown > .editor {
@@ -657,7 +659,11 @@ textarea:focus {
 
 .mk-callout {
   border-left: 3px solid var(--callout-color, var(--accent));
-  background: color-mix(in srgb, var(--callout-color, var(--accent)), transparent 88%);
+  background: color-mix(
+    in srgb,
+    var(--callout-color, var(--accent)),
+    transparent 88%
+  );
   border-radius: 4px;
   padding: 4px 8px 4px 12px;
   margin: 4px 0;
@@ -1585,10 +1591,14 @@ textarea:focus {
 }
 
 .landing-hero::before {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse at 50% 0%, rgba(137, 180, 250, 0.08) 0%, transparent 60%);
+  background: radial-gradient(
+    ellipse at 50% 0%,
+    rgba(137, 180, 250, 0.08) 0%,
+    transparent 60%
+  );
   pointer-events: none;
 }
 
@@ -1626,7 +1636,9 @@ textarea:focus {
   font-size: 16px;
   font-weight: 700;
   text-decoration: none;
-  transition: background 0.15s, transform 0.1s;
+  transition:
+    background 0.15s,
+    transform 0.1s;
 }
 
 .hero-btn-primary:hover {
@@ -1642,7 +1654,9 @@ textarea:focus {
   font-size: 16px;
   font-weight: 600;
   text-decoration: none;
-  transition: border-color 0.15s, color 0.15s;
+  transition:
+    border-color 0.15s,
+    color 0.15s;
 }
 
 .hero-btn-secondary:hover {
@@ -1698,7 +1712,9 @@ textarea:focus {
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
   padding: 24px;
-  transition: border-color 0.2s, transform 0.15s;
+  transition:
+    border-color 0.2s,
+    transform 0.15s;
 }
 
 .feature-card:hover {
@@ -1885,7 +1901,7 @@ textarea:focus {
   .landing-hero h1 {
     font-size: 36px;
   }
-  
+
   .landing-hero .tagline {
     font-size: 16px;
   }
@@ -1929,5 +1945,3 @@ textarea:focus {
 /* ============================================================
    Formatting Toolbar
    ============================================================ */
-
-

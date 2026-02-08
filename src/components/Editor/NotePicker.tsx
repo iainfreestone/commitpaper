@@ -33,9 +33,7 @@ export function NotePicker({ anchor, onSelect, onClose }: NotePickerProps) {
     if (!q) {
       setFiltered(notes);
     } else {
-      setFiltered(
-        notes.filter((n) => n.toLowerCase().includes(q)),
-      );
+      setFiltered(notes.filter((n) => n.toLowerCase().includes(q)));
     }
     setSelectedIdx(0);
   }, [query, notes]);

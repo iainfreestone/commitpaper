@@ -72,7 +72,8 @@ function findCallouts(doc: ProsemirrorNode) {
     if (!match) return;
 
     const type = match[1].toLowerCase();
-    const title = match[3]?.trim() || type.charAt(0).toUpperCase() + type.slice(1);
+    const title =
+      match[3]?.trim() || type.charAt(0).toUpperCase() + type.slice(1);
     const color = CALLOUT_COLORS[type] || CALLOUT_COLORS.note;
     const icon = CALLOUT_ICONS[type] || CALLOUT_ICONS.note;
 
