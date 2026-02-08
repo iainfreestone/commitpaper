@@ -25,7 +25,13 @@ export interface FileTreeNode {
 
 export interface FileStatus {
   path: string;
-  status: "Modified" | "Added" | "Deleted" | "Renamed" | "Untracked" | "Conflicted";
+  status:
+    | "Modified"
+    | "Added"
+    | "Deleted"
+    | "Renamed"
+    | "Untracked"
+    | "Conflicted";
   staged: boolean;
 }
 
@@ -125,7 +131,9 @@ function openDB(): Promise<IDBDatabase> {
 }
 
 /** Persist the last-opened directory handle so we can restore it on next visit */
-export async function persistVaultHandle(handle: FileSystemDirectoryHandle): Promise<void> {
+export async function persistVaultHandle(
+  handle: FileSystemDirectoryHandle,
+): Promise<void> {
   try {
     const db = await openDB();
     const tx = db.transaction(STORE_NAME, "readwrite");
@@ -133,7 +141,8 @@ export async function persistVaultHandle(handle: FileSystemDirectoryHandle): Pro
     // Also maintain a recent list (up to 5)
     const getReq = tx.objectStore(STORE_NAME).get("recent-vaults");
     getReq.onsuccess = () => {
-      const recent: { name: string; handle: FileSystemDirectoryHandle }[] = getReq.result || [];
+      const recent: { name: string; handle: FileSystemDirectoryHandle }[] =
+        getReq.result || [];
       // Remove if already in list
       const filtered = recent.filter((r) => r.name !== handle.name);
       filtered.unshift({ name: handle.name, handle });
@@ -169,7 +178,9 @@ export async function restoreVaultHandle(): Promise<FileSystemDirectoryHandle | 
 }
 
 /** Get the list of recently opened vault handles */
-export async function getRecentVaults(): Promise<{ name: string; handle: FileSystemDirectoryHandle }[]> {
+export async function getRecentVaults(): Promise<
+  { name: string; handle: FileSystemDirectoryHandle }[]
+> {
   try {
     const db = await openDB();
     return new Promise((resolve) => {
@@ -190,7 +201,9 @@ export async function getRecentVaults(): Promise<{ name: string; handle: FileSys
 }
 
 /** Verify we still have permission (or re-request it) */
-export async function verifyPermission(handle: FileSystemDirectoryHandle): Promise<boolean> {
+export async function verifyPermission(
+  handle: FileSystemDirectoryHandle,
+): Promise<boolean> {
   try {
     if ((await handle.queryPermission({ mode: "readwrite" })) === "granted") {
       return true;
@@ -226,7 +239,7 @@ export function getRootHandle(): FileSystemDirectoryHandle | null {
 
 async function getFileHandle(
   path: string,
-  create = false
+  create = false,
 ): Promise<FileSystemFileHandle> {
   if (!rootHandle) throw new Error("No vault open");
   const parts = path.replace(/\\/g, "/").split("/").filter(Boolean);
@@ -239,7 +252,7 @@ async function getFileHandle(
 
 async function getDirHandle(
   path: string,
-  create = false
+  create = false,
 ): Promise<FileSystemDirectoryHandle> {
   if (!rootHandle) throw new Error("No vault open");
   const parts = path.replace(/\\/g, "/").split("/").filter(Boolean);
@@ -325,7 +338,9 @@ async function rebuildNoteIndex() {
   }
 
   // Build search index
-  buildSearchIndex(entries.map(e => ({ path: e.path, title: e.name, content: e.content })));
+  buildSearchIndex(
+    entries.map((e) => ({ path: e.path, title: e.name, content: e.content })),
+  );
 }
 
 function extractWikilinks(content: string): string[] {
@@ -348,7 +363,9 @@ export async function getBacklinks(path: string): Promise<string[]> {
   const backlinks: string[] = [];
   for (const entry of noteIndex.values()) {
     if (entry.path === path) continue;
-    if (entry.wikilinks.some(l => l.toLowerCase() === targetName.toLowerCase())) {
+    if (
+      entry.wikilinks.some((l) => l.toLowerCase() === targetName.toLowerCase())
+    ) {
       backlinks.push(entry.path);
     }
   }
@@ -356,7 +373,7 @@ export async function getBacklinks(path: string): Promise<string[]> {
 }
 
 export async function getNoteNames(): Promise<string[]> {
-  return Array.from(noteIndex.values()).map(e => e.name);
+  return Array.from(noteIndex.values()).map((e) => e.name);
 }
 
 export async function resolveWikilink(name: string): Promise<string | null> {
@@ -377,7 +394,10 @@ export async function getGraphData(): Promise<GraphData> {
   // Count backlinks
   for (const entry of noteIndex.values()) {
     for (const link of entry.wikilinks) {
-      backlinkCounts.set(link.toLowerCase(), (backlinkCounts.get(link.toLowerCase()) || 0) + 1);
+      backlinkCounts.set(
+        link.toLowerCase(),
+        (backlinkCounts.get(link.toLowerCase()) || 0) + 1,
+      );
     }
   }
 
@@ -397,7 +417,10 @@ export async function getGraphData(): Promise<GraphData> {
   return { nodes, edges };
 }
 
-export async function getLocalGraph(path: string, depth = 2): Promise<GraphData> {
+export async function getLocalGraph(
+  path: string,
+  depth = 2,
+): Promise<GraphData> {
   const fullGraph = await getGraphData();
   const centerName = getNoteName(path);
 
@@ -412,8 +435,10 @@ export async function getLocalGraph(path: string, depth = 2): Promise<GraphData>
       visited.add(name);
       // Find edges from/to this node
       for (const edge of fullGraph.edges) {
-        if (edge.source.toLowerCase() === name) nextFrontier.add(edge.target.toLowerCase());
-        if (edge.target.toLowerCase() === name) nextFrontier.add(edge.source.toLowerCase());
+        if (edge.source.toLowerCase() === name)
+          nextFrontier.add(edge.target.toLowerCase());
+        if (edge.target.toLowerCase() === name)
+          nextFrontier.add(edge.source.toLowerCase());
       }
     }
     frontier = nextFrontier;
@@ -421,10 +446,12 @@ export async function getLocalGraph(path: string, depth = 2): Promise<GraphData>
   // Add final frontier
   for (const name of frontier) visited.add(name);
 
-  const nodes = fullGraph.nodes.filter(n => visited.has(n.id.toLowerCase()));
-  const nodeIds = new Set(nodes.map(n => n.id.toLowerCase()));
+  const nodes = fullGraph.nodes.filter((n) => visited.has(n.id.toLowerCase()));
+  const nodeIds = new Set(nodes.map((n) => n.id.toLowerCase()));
   const edges = fullGraph.edges.filter(
-    e => nodeIds.has(e.source.toLowerCase()) && nodeIds.has(e.target.toLowerCase())
+    (e) =>
+      nodeIds.has(e.source.toLowerCase()) &&
+      nodeIds.has(e.target.toLowerCase()),
   );
 
   return { nodes, edges };
@@ -465,11 +492,46 @@ export async function writeFile(path: string, content: string): Promise<void> {
   modifiedFiles.add(path);
 }
 
-export async function createNote(path: string): Promise<void> {
-  await writeFile(path, "");
+export async function createNote(
+  path: string,
+  initialContent?: string,
+): Promise<void> {
+  const content = initialContent ?? "";
+  await writeFile(path, content);
   // Add to note index
   const name = getNoteName(path);
-  noteIndex.set(path, { path, name, content: "", wikilinks: [] });
+  noteIndex.set(path, {
+    path,
+    name,
+    content,
+    wikilinks: extractWikilinks(content),
+  });
+}
+
+/** Check whether a file exists at the given path */
+export async function fileExists(path: string): Promise<boolean> {
+  try {
+    await getFileHandle(path);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Return the next available "untitled" filename in the given directory.
+ * e.g. "untitled.md", "untitled 1.md", "untitled 2.md", ...
+ * @param dir — directory prefix like "" (root) or "folder/" (must end with /)
+ */
+export async function getNextUntitledName(dir = ""): Promise<string> {
+  const base = `${dir}untitled.md`;
+  if (!(await fileExists(base))) return base;
+  let i = 1;
+  while (true) {
+    const candidate = `${dir}untitled ${i}.md`;
+    if (!(await fileExists(candidate))) return candidate;
+    i++;
+  }
 }
 
 export async function deleteFile(path: string): Promise<void> {
@@ -484,7 +546,10 @@ export async function deleteFile(path: string): Promise<void> {
   modifiedFiles.add(path);
 }
 
-export async function renameFile(oldPath: string, newPath: string): Promise<void> {
+export async function renameFile(
+  oldPath: string,
+  newPath: string,
+): Promise<void> {
   // Browser FS API doesn't have a rename — we copy + delete
   try {
     const content = await readFile(oldPath);
@@ -493,7 +558,12 @@ export async function renameFile(oldPath: string, newPath: string): Promise<void
     // Update note index
     noteIndex.delete(oldPath);
     const name = getNoteName(newPath);
-    noteIndex.set(newPath, { path: newPath, name, content, wikilinks: extractWikilinks(content) });
+    noteIndex.set(newPath, {
+      path: newPath,
+      name,
+      content,
+      wikilinks: extractWikilinks(content),
+    });
   } catch {
     throw new Error(`Failed to rename ${oldPath} to ${newPath}`);
   }
@@ -510,7 +580,7 @@ export async function getFileTree(): Promise<FileTreeNode[]> {
 
 async function buildTree(
   dir: FileSystemDirectoryHandle,
-  prefix: string
+  prefix: string,
 ): Promise<FileTreeNode[]> {
   const entries: FileTreeNode[] = [];
 
@@ -522,7 +592,10 @@ async function buildTree(
     const path = prefix ? `${prefix}/${name}` : name;
 
     if (handle.kind === "directory") {
-      const children = await buildTree(handle as FileSystemDirectoryHandle, path);
+      const children = await buildTree(
+        handle as FileSystemDirectoryHandle,
+        path,
+      );
       entries.push({ type: "folder", name, path, children });
     } else {
       entries.push({
@@ -543,7 +616,10 @@ async function buildTree(
   return entries;
 }
 
-export async function saveBinaryFile(path: string, data: number[]): Promise<string> {
+export async function saveBinaryFile(
+  path: string,
+  data: number[],
+): Promise<string> {
   const handle = await getFileHandle(path, true);
   const writable = await handle.createWritable();
   await writable.write(new Uint8Array(data));
@@ -558,7 +634,7 @@ export async function saveBinaryFile(path: string, data: number[]): Promise<stri
 
 export async function gitStatus(): Promise<FileStatus[]> {
   // Return our tracked modified files as "Modified" + untracked
-  return Array.from(modifiedFiles).map(path => ({
+  return Array.from(modifiedFiles).map((path) => ({
     path,
     status: "Modified" as const,
     staged: false,
@@ -638,11 +714,17 @@ export async function gitLog(_maxCount?: number): Promise<CommitInfo[]> {
   return [];
 }
 
-export async function gitFileLog(_filePath: string, _maxCount?: number): Promise<CommitInfo[]> {
+export async function gitFileLog(
+  _filePath: string,
+  _maxCount?: number,
+): Promise<CommitInfo[]> {
   return [];
 }
 
-export async function gitFileAtCommit(_commitId: string, _filePath: string): Promise<string> {
+export async function gitFileAtCommit(
+  _commitId: string,
+  _filePath: string,
+): Promise<string> {
   throw new Error("File history is not available in browser mode");
 }
 
@@ -683,7 +765,7 @@ export function startFileWatching(onChange: () => void) {
   pollTimer = setInterval(async () => {
     try {
       const tree = await getFileTree();
-      const snapshot = JSON.stringify(tree.map(n => n.path));
+      const snapshot = JSON.stringify(tree.map((n) => n.path));
       if (snapshot !== lastTreeSnapshot) {
         lastTreeSnapshot = snapshot;
         onChange();

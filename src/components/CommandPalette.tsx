@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useEditorStore } from "../stores/editorStore";
-import { getNoteNames, resolveWikilink } from "../lib/api";
+import { getNoteNames, resolveWikilink, createNote } from "../lib/api";
+import { useVaultStore } from "../stores/vaultStore";
 
 interface CommandPaletteProps {
   onClose: () => void;
@@ -13,6 +14,7 @@ export function CommandPalette({ onClose }: CommandPaletteProps) {
   const [selectedIdx, setSelectedIdx] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const openFile = useEditorStore((s) => s.openFile);
+  const refreshFileTree = useVaultStore((s) => s.refreshFileTree);
 
   useEffect(() => {
     getNoteNames().then((names) => {
@@ -34,7 +36,12 @@ export function CommandPalette({ onClose }: CommandPaletteProps) {
     if (path) {
       openFile(path);
     } else {
-      openFile(`${name}.md`);
+      // Create the note if it doesn't exist
+      const newPath = `${name}.md`;
+      const title = name;
+      await createNote(newPath, `# ${title}\n`);
+      await refreshFileTree();
+      openFile(newPath);
     }
     onClose();
   };

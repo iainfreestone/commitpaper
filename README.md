@@ -1,6 +1,6 @@
 # CommitPaper
 
-**Git-native personal knowledge management — in your browser.** An Obsidian-inspired web app where your notes are just files on your filesystem. No cloud accounts, no subscriptions, no proprietary formats.
+**Local-first personal knowledge management — in your browser.** An Obsidian-inspired web app where your notes are just files on your filesystem. No cloud accounts, no subscriptions, no proprietary formats. Works with any folder on your computer — add Git for cross-device sync and version history.
 
 Built with **React 19 + CodeMirror 6 + TypeScript + Vite** and the **File System Access API**.
 
@@ -27,7 +27,7 @@ Built with **React 19 + CodeMirror 6 + TypeScript + Vite** and the **File System
 - **File management** — drag & drop, right-click context menus, rename, delete, star notes
 - **Auto-save** — changes saved automatically after 2 seconds of inactivity
 - **Image paste** — paste images from clipboard, auto-saved to `attachments/`
-- **Git status** — read-only git info (branch name, modified file count) displayed in the sidebar
+- **Git awareness** — if your vault is a Git repo, branch name and modified file count are displayed in the sidebar
 - **PWA support** — install as a Progressive Web App for offline use
 - **Dark theme** — Catppuccin Mocha colour scheme throughout
 
@@ -80,14 +80,14 @@ Output is in `dist/`. Serve with any static file server.
 
 ## How It Works
 
-CommitPaper runs entirely in the browser. When you click **Open Vault**, the browser's `showDirectoryPicker()` API lets you select a folder. CommitPaper then reads and writes `.md` files directly on your filesystem — no server, no uploads, nothing leaves your machine.
+CommitPaper runs entirely in the browser. When you click **Open Vault**, the browser's `showDirectoryPicker()` API lets you select any folder on your computer. CommitPaper then reads and writes `.md` files directly on your filesystem — no server, no uploads, nothing leaves your machine.
 
 - **File System Access API** replaces the traditional backend for all file operations
 - **MiniSearch** provides client-side full-text search (replaces server-side Tantivy)
 - **Polling** (every 3s) detects external file changes (replaces native file watching)
-- **Git status** is read-only — branch name from `.git/HEAD`, modified file count. Use your terminal or Git client for commits, pushes, and pulls.
+- **Git awareness** is optional and read-only — if the folder is a Git repo, the branch name and modified file count are displayed. Use your terminal or Git client for commits, pushes, and pulls.
 
-Your vault is just a folder. If you stop using CommitPaper, your notes are plain Markdown files right where you left them.
+Your vault is just a folder. It doesn't need to be a Git repo — but if it is, you get branch info and can sync across devices. If you stop using CommitPaper, your notes are plain Markdown files right where you left them.
 
 ---
 
@@ -153,18 +153,19 @@ commitpaper/
 
 ---
 
-## Git Integration (Read-Only)
+## Git Integration (Optional, Read-Only)
 
-The web version shows git status information but cannot perform git operations:
+CommitPaper works with any folder — Git is not required. But if your vault is a Git repo, the web version shows useful status information:
 
 - **Branch name** — read from `.git/HEAD`
 - **Modified file count** — tracked in-memory during editing
 - **Guidance** — the Git panel shows terminal commands for committing and pushing
 
-For full git operations, use your terminal:
+Using Git gives you version history and cross-device sync. For full git operations, use your terminal:
 
 ```bash
 cd your-vault
+git init              # only needed once, if not already a repo
 git add . && git commit -m "update notes"
 git push
 ```

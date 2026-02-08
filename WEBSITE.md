@@ -1,10 +1,10 @@
 # CommitPaper
 
-## Your notes. Your repo. Your rules.
+## Your notes. Your folder. Your rules.
 
-CommitPaper is a free, open-source web app for writing and organising your notes — powered entirely by Git. No cloud accounts, no subscriptions, no proprietary formats. Just Markdown files in a repository you own.
+CommitPaper is a free, open-source web app for writing and organising your notes — right in your browser. No cloud accounts, no subscriptions, no proprietary formats. Just Markdown files in a folder you own. Add Git for version history and cross-device sync.
 
-Think of it as **Obsidian meets Git**, running right in your browser.
+Think of it as **Obsidian meets your filesystem**, running right in your browser.
 
 ---
 
@@ -15,8 +15,8 @@ Most note-taking apps lock you into their ecosystem. Your notes live on someone 
 CommitPaper takes a different approach:
 
 - **Your notes are plain Markdown files.** Open them in any editor, on any device, forever.
-- **Your sync is Git.** Push to GitHub, GitLab, or your own server. You control where your data lives.
-- **Your history is automatic.** Every commit is a snapshot. Revert any note to any point in time.
+- **Your vault is just a folder.** Pick any folder on your computer. No special setup required.
+- **Git is optional but powerful.** Add Git for version history, cross-device sync via GitHub/GitLab, and the ability to revert any note to any point in time.
 - **Your workflow is local-first.** Everything runs on your machine. No internet required to write.
 
 No vendor lock-in. No monthly fee. No telemetry.
@@ -74,13 +74,15 @@ The **Graph View** renders your entire vault as an interactive network:
 
 See the shape of your thinking at a glance.
 
-### Git awareness
+### Git awareness (optional)
 
-CommitPaper reads your Git status directly from the filesystem:
+If your vault is a Git repo, CommitPaper reads your Git status directly from the filesystem:
 
 - **See your branch** — the current branch name is read from `.git/HEAD` and displayed in the sidebar and status bar.
 - **Modified file count** — see how many files have been changed at a glance.
 - **Terminal guidance** — the Git panel shows the commands you need to commit and push from your terminal.
+
+Git is not required — CommitPaper works perfectly well with any regular folder. But if you want version history or cross-device sync, initialising a Git repo in your vault gives you both.
 
 For full Git operations (commit, push, pull, branch), use your terminal or favourite Git client alongside CommitPaper.
 
@@ -254,19 +256,19 @@ Produces a static site in `dist/`. Deploy to any web server.
 
 ## Tech Stack
 
-| Layer         | Technology              | Why                                                |
-| ------------- | ----------------------- | -------------------------------------------------- |
-| UI framework  | React 19                | Component-driven, fast rendering                   |
-| Editor        | CodeMirror 6            | Extensible, performant, modern editor toolkit      |
-| Type safety   | TypeScript 5            | Catch bugs before they ship                        |
-| Build tool    | Vite 7                  | Instant HMR, fast builds                           |
-| State         | Zustand 5               | Minimal, flexible state management                 |
-| Graph         | Cytoscape.js            | Battle-tested graph visualisation                  |
-| Math          | KaTeX                   | Fast LaTeX rendering                               |
-| Diagrams      | Mermaid                 | Declarative diagrams from text                     |
-| Search        | MiniSearch              | Client-side full-text search                       |
-| File access   | File System Access API  | Direct filesystem read/write in the browser        |
-| PWA           | vite-plugin-pwa         | Offline support and installability                 |
+| Layer        | Technology             | Why                                           |
+| ------------ | ---------------------- | --------------------------------------------- |
+| UI framework | React 19               | Component-driven, fast rendering              |
+| Editor       | CodeMirror 6           | Extensible, performant, modern editor toolkit |
+| Type safety  | TypeScript 5           | Catch bugs before they ship                   |
+| Build tool   | Vite 7                 | Instant HMR, fast builds                      |
+| State        | Zustand 5              | Minimal, flexible state management            |
+| Graph        | Cytoscape.js           | Battle-tested graph visualisation             |
+| Math         | KaTeX                  | Fast LaTeX rendering                          |
+| Diagrams     | Mermaid                | Declarative diagrams from text                |
+| Search       | MiniSearch             | Client-side full-text search                  |
+| File access  | File System Access API | Direct filesystem read/write in the browser   |
+| PWA          | vite-plugin-pwa        | Offline support and installability            |
 
 ---
 
@@ -274,7 +276,7 @@ Produces a static site in `dist/`. Deploy to any web server.
 
 1. **Local first.** Your files live on your machine. You choose if and where to sync them.
 2. **Plain text.** Markdown is the format. No proprietary schemas, no binary blobs.
-3. **Git native.** Version control isn't a feature bolted on — it's the foundation.
+3. **Git ready.** Add Git for version history and sync — or don't. It's your choice.
 4. **Fast and light.** No backend server, no bundled browser engine, instant startup.
 5. **Open source.** MIT licensed. Read the code, fork it, make it yours.
 
@@ -283,10 +285,13 @@ Produces a static site in `dist/`. Deploy to any web server.
 ## FAQ
 
 **Is this a replacement for Obsidian?**
-It's inspired by Obsidian but takes a different approach. Where Obsidian uses its own sync service, CommitPaper uses Git. Where Obsidian has a plugin ecosystem, CommitPaper has the features built in. If you want your notes in a Git repo with no extra setup, CommitPaper is for you.
+It's inspired by Obsidian but takes a different approach. CommitPaper works with any folder on your computer and optionally integrates with Git for version history and sync. Where Obsidian has a plugin ecosystem, CommitPaper has the features built in. If you want a lightweight, local-first note app that works with plain Markdown files, CommitPaper is for you.
 
 **Does it work with existing Obsidian vaults?**
 Yes. CommitPaper reads standard Markdown files and supports Obsidian-flavoured syntax including wikilinks, callouts, and frontmatter. Point it at your existing vault folder.
+
+**Do I need Git?**
+No. CommitPaper works with any folder — Git is entirely optional. But if you want version history or to sync your notes across computers, initialising a Git repo in your vault is a great way to get both.
 
 **What browsers are supported?**
 Chrome 86+ and Edge 86+ (requires the File System Access API). Firefox and Safari are not currently supported.
@@ -301,7 +306,7 @@ On your filesystem, in the folder you choose. CommitPaper doesn't store data any
 Absolutely. Once loaded, CommitPaper works fully offline as a Progressive Web App. Writing, searching, and organising are fully local.
 
 **Can I commit and push from CommitPaper?**
-Not directly — browsers can't run Git operations. The Git panel shows your branch and modified files, then guides you to use your terminal for commits and pushes.
+Not directly — browsers can't run Git operations. If your vault is a Git repo, the Git panel shows your branch and modified files, then guides you to use your terminal for commits and pushes.
 
 **How is it different from VS Code + Markdown?**
 CommitPaper is purpose-built for note-taking. It has wikilinks, backlinks, a knowledge graph, daily notes, templates, callouts, and a live preview that VS Code doesn't offer out of the box. It's also much lighter than VS Code.

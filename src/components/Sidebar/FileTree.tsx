@@ -6,6 +6,7 @@ import {
   createFolder,
   deleteFile,
   renameFile,
+  getNextUntitledName,
 } from "../../lib/api";
 import { ContextMenu, ContextMenuItem } from "../ContextMenu";
 import type { FileTreeNode } from "../../lib/api";
@@ -252,10 +253,16 @@ export function FileTree() {
         </button>
         <button
           className="git-action-btn"
-          onClick={() => {
-            setIsCreating(true);
-            setCreateType("file");
-            setNewFileName("");
+          onClick={async () => {
+            try {
+              const path = await getNextUntitledName();
+              const title = path.replace(/\.md$/, "");
+              await createNote(path, `# ${title}\n`);
+              openFile(path);
+              await refreshFileTree();
+            } catch (e) {
+              console.error("Failed to create note:", e);
+            }
           }}
           title="New Note"
         >

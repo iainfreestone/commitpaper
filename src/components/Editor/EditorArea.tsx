@@ -65,7 +65,10 @@ export function EditorArea() {
         {activeTabPath ? (
           viewMode === "source" ? (
             <Editor
-              key={activeTabPath}
+              key={
+                openTabs.find((t) => t.path === activeTabPath)?.id ??
+                activeTabPath
+              }
               content={content}
               filePath={activeTabPath}
             />
