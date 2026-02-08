@@ -1,22 +1,27 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useEditorStore } from "../../stores/editorStore";
 import { Editor } from "./Editor";
-import { MarkdownPreview } from "./MarkdownPreview";
-
-type ViewMode = "source" | "preview";
+import type { EditorHandle } from "./Editor";
+import { FormattingToolbar } from "./FormattingToolbar";
+import type { EditorView } from "@codemirror/view";
 
 export function EditorArea() {
   const { openTabs, activeTabPath, content, closeTab, setActiveTab } =
     useEditorStore();
-  const [viewMode, setViewMode] = useState<ViewMode>("source");
+  const editorRef = useRef<EditorHandle>(null);
+  const [editorView, setEditorView] = useState<EditorView | null>(null);
 
-  useEffect(() => {
-    const handler = () => {
-      setViewMode((v) => (v === "source" ? "preview" : "source"));
-    };
-    window.addEventListener("toggle-preview-mode", handler);
-    return () => window.removeEventListener("toggle-preview-mode", handler);
+  // Update editorView ref when the editor mounts/changes
+  const updateEditorView = useCallback(() => {
+    const view = editorRef.current?.getView() ?? null;
+    setEditorView(view);
   }, []);
+
+  // Poll briefly after mount to catch the view once CodeMirror initialises
+  useEffect(() => {
+    const timer = setTimeout(updateEditorView, 50);
+    return () => clearTimeout(timer);
+  }, [activeTabPath, updateEditorView]);
 
   return (
     <div className="editor-area">
@@ -41,30 +46,14 @@ export function EditorArea() {
               </button>
             </div>
           ))}
-          {activeTabPath && (
-            <div className="view-mode-toggle">
-              <button
-                className={`view-mode-btn ${viewMode === "source" ? "active" : ""}`}
-                onClick={() => setViewMode("source")}
-                title="Source mode"
-              >
-                ✎
-              </button>
-              <button
-                className={`view-mode-btn ${viewMode === "preview" ? "active" : ""}`}
-                onClick={() => setViewMode("preview")}
-                title="Preview mode"
-              >
-                👁
-              </button>
-            </div>
-          )}
         </div>
       )}
       <div className="editor-container">
         {activeTabPath ? (
-          viewMode === "source" ? (
+          <>
+            <FormattingToolbar editorView={editorView} />
             <Editor
+              ref={editorRef}
               key={
                 openTabs.find((t) => t.path === activeTabPath)?.id ??
                 activeTabPath
@@ -72,9 +61,7 @@ export function EditorArea() {
               content={content}
               filePath={activeTabPath}
             />
-          ) : (
-            <MarkdownPreview content={content} />
-          )
+          </>
         ) : (
           <div className="editor-empty">
             <div style={{ textAlign: "center" }}>

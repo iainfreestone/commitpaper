@@ -154,8 +154,8 @@ export default function LandingPage() {
             <p>
               The editor understands Markdown deeply. Headings render at their
               actual size, bold appears bold, code blocks get syntax-coloured
-              backgrounds, and images render inline. Press Ctrl+E for a full
-              preview.
+              backgrounds, and images render inline. Just click any line to edit
+              the raw syntax.
             </p>
           </div>
           <div className="feature-card">
@@ -248,13 +248,7 @@ export default function LandingPage() {
             </tr>
             <tr>
               <td>
-                <kbd>Ctrl+E</kbd>
-              </td>
-              <td>Toggle source / preview</td>
-            </tr>
-            <tr>
-              <td>
-                <kbd>Ctrl+B</kbd>
+                <kbd>Ctrl+\</kbd>
               </td>
               <td>Toggle right panel</td>
             </tr>
@@ -263,6 +257,42 @@ export default function LandingPage() {
                 <kbd>Alt+D</kbd>
               </td>
               <td>Today's daily note</td>
+            </tr>
+            <tr>
+              <td>
+                <kbd>Ctrl+B</kbd>
+              </td>
+              <td>Bold</td>
+            </tr>
+            <tr>
+              <td>
+                <kbd>Ctrl+I</kbd>
+              </td>
+              <td>Italic</td>
+            </tr>
+            <tr>
+              <td>
+                <kbd>Ctrl+K</kbd>
+              </td>
+              <td>Insert link</td>
+            </tr>
+            <tr>
+              <td>
+                <kbd>Ctrl+1–4</kbd>
+              </td>
+              <td>Heading level 1–4</td>
+            </tr>
+            <tr>
+              <td>
+                <kbd>Ctrl+Shift+8</kbd>
+              </td>
+              <td>Bullet list</td>
+            </tr>
+            <tr>
+              <td>
+                <kbd>Ctrl+Shift+7</kbd>
+              </td>
+              <td>Numbered list</td>
             </tr>
             <tr>
               <td>

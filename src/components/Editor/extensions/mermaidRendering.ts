@@ -172,7 +172,7 @@ function buildMermaidDecorations(view: EditorView): DecorationSet {
   return builder.finish();
 }
 
-export const mermaidPlugin = ViewPlugin.fromClass(
+const mermaidPluginRef = ViewPlugin.fromClass(
   class {
     decorations: DecorationSet;
     constructor(view: EditorView) {
@@ -184,8 +184,16 @@ export const mermaidPlugin = ViewPlugin.fromClass(
       }
     }
   },
-  { decorations: (v) => v.decorations },
 );
+
+// Block decorations must be provided via the facet, not the plugin's decorations option
+export const mermaidPlugin = [
+  mermaidPluginRef,
+  EditorView.decorations.of(
+    (view: EditorView) =>
+      view.plugin(mermaidPluginRef)?.decorations ?? Decoration.none,
+  ),
+];
 
 export const mermaidTheme = EditorView.baseTheme({
   ".cm-mermaid-widget": {

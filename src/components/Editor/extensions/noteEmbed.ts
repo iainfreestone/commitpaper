@@ -149,7 +149,7 @@ function buildEmbedDecorations(view: EditorView): DecorationSet {
   return builder.finish();
 }
 
-export const embedPlugin = ViewPlugin.fromClass(
+const embedPluginRef = ViewPlugin.fromClass(
   class {
     decorations: DecorationSet;
     constructor(view: EditorView) {
@@ -161,8 +161,16 @@ export const embedPlugin = ViewPlugin.fromClass(
       }
     }
   },
-  { decorations: (v) => v.decorations },
 );
+
+// Block decorations must be provided via the facet, not the plugin's decorations option
+export const embedPlugin = [
+  embedPluginRef,
+  EditorView.decorations.of(
+    (view: EditorView) =>
+      view.plugin(embedPluginRef)?.decorations ?? Decoration.none,
+  ),
+];
 
 export const embedTheme = EditorView.baseTheme({
   ".cm-embed-widget": {

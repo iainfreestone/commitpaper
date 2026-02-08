@@ -49,7 +49,7 @@ The editor understands Markdown deeply. As you type, formatting appears inline:
 - Images render below their Markdown line.
 - Horizontal rules become styled dividers.
 
-Press **Ctrl+E** to switch to a fully rendered read-only preview whenever you want a distraction-free reading experience.
+Move your cursor away from a line and the rendered view takes over — no need to switch modes.
 
 ### Link your thinking
 
@@ -184,17 +184,23 @@ The **Properties** panel gives you a visual editor for YAML frontmatter — add,
 
 ## Keyboard Shortcuts
 
-| Shortcut       | Action                  |
-| -------------- | ----------------------- |
-| `Ctrl+S`       | Save                    |
-| `Ctrl+P`       | Command palette         |
-| `Ctrl+E`       | Toggle source / preview |
-| `Ctrl+B`       | Toggle right panel      |
-| `Alt+D`        | Today's daily note      |
-| `Ctrl+F`       | Find in file            |
-| `Ctrl+H`       | Find and replace        |
-| `Ctrl+Z`       | Undo                    |
-| `Ctrl+Shift+Z` | Redo                    |
+| Shortcut       | Action             |
+| -------------- | ------------------ |
+| `Ctrl+S`       | Save               |
+| `Ctrl+P`       | Command palette    |
+| `Ctrl+\`       | Toggle right panel |
+| `Alt+D`        | Today's daily note |
+| `Ctrl+B`       | Bold               |
+| `Ctrl+I`       | Italic             |
+| `Ctrl+K`       | Insert link        |
+| `Ctrl+1–4`     | Heading level 1–4  |
+| `Ctrl+Shift+8` | Bullet list        |
+| `Ctrl+Shift+7` | Numbered list      |
+| `Ctrl+Shift+9` | Checkbox           |
+| `Ctrl+F`       | Find in file       |
+| `Ctrl+H`       | Find and replace   |
+| `Ctrl+Z`       | Undo               |
+| `Ctrl+Shift+Z` | Redo               |
 
 ---
 

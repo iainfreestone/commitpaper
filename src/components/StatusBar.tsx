@@ -16,7 +16,9 @@ export function StatusBar() {
 
   const handleSwitchVault = async () => {
     try {
-      const handle = await (window as any).showDirectoryPicker({ mode: "readwrite" });
+      const handle = await (window as any).showDirectoryPicker({
+        mode: "readwrite",
+      });
       // Save any dirty file first
       if (useEditorStore.getState().isDirty) {
         await useEditorStore.getState().saveFile();
@@ -76,15 +78,22 @@ export function StatusBar() {
 
       {modifiedCount > 0 && (
         <div className="status-bar-item">
-          <span style={{ color: "var(--yellow)" }}>●{modifiedCount} modified</span>
+          <span style={{ color: "var(--yellow)" }}>
+            ●{modifiedCount} modified
+          </span>
         </div>
       )}
 
       <div className="status-bar-right">
         {activeTabPath && wordCount > 0 && (
-          <div className="status-bar-item">
-            {wordCount.toLocaleString()} word{wordCount !== 1 ? "s" : ""}
-          </div>
+          <>
+            <div className="status-bar-item">
+              {wordCount.toLocaleString()} word{wordCount !== 1 ? "s" : ""}
+            </div>
+            <div className="status-bar-item" style={{ opacity: 0.6 }}>
+              ~{Math.max(1, Math.ceil(wordCount / 200))} min read
+            </div>
+          </>
         )}
         {isDirty && (
           <div className="status-bar-item" style={{ color: "var(--yellow)" }}>

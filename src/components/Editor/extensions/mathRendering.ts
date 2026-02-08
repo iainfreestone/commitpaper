@@ -186,7 +186,7 @@ function buildMathDecorations(view: EditorView): DecorationSet {
   return builder.finish();
 }
 
-export const mathPlugin = ViewPlugin.fromClass(
+const mathPluginRef = ViewPlugin.fromClass(
   class {
     decorations: DecorationSet;
     constructor(view: EditorView) {
@@ -198,8 +198,16 @@ export const mathPlugin = ViewPlugin.fromClass(
       }
     }
   },
-  { decorations: (v) => v.decorations },
 );
+
+// Block decorations must be provided via the facet, not the plugin's decorations option
+export const mathPlugin = [
+  mathPluginRef,
+  EditorView.decorations.of(
+    (view: EditorView) =>
+      view.plugin(mathPluginRef)?.decorations ?? Decoration.none,
+  ),
+];
 
 export const mathTheme = EditorView.baseTheme({
   ".cm-math-inline": {

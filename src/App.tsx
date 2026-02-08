@@ -9,7 +9,14 @@ import { RightPanel } from "./components/RightPanel/RightPanel";
 import { StatusBar } from "./components/StatusBar";
 import { CommandPalette } from "./components/CommandPalette";
 import { openTodayNote } from "./components/Sidebar/DailyNotes";
-import { resolveWikilink, startFileWatching, stopFileWatching, restoreVaultHandle, verifyPermission, setRootHandle } from "./lib/api";
+import {
+  resolveWikilink,
+  startFileWatching,
+  stopFileWatching,
+  restoreVaultHandle,
+  verifyPermission,
+  setRootHandle,
+} from "./lib/api";
 
 export default function App() {
   const vault = useVaultStore((s) => s.vault);
@@ -26,7 +33,10 @@ export default function App() {
     (async () => {
       try {
         const handle = await restoreVaultHandle();
-        if (cancelled || !handle) { setRestoringVault(false); return; }
+        if (cancelled || !handle) {
+          setRestoringVault(false);
+          return;
+        }
         const granted = await verifyPermission(handle);
         if (cancelled) return;
         if (granted) {
@@ -39,7 +49,9 @@ export default function App() {
         if (!cancelled) setRestoringVault(false);
       }
     })();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   // File watching via polling
@@ -76,19 +88,33 @@ export default function App() {
       }
     };
     window.addEventListener("wikilink-click", handleWikilinkClick);
-    return () => window.removeEventListener("wikilink-click", handleWikilinkClick);
+    return () =>
+      window.removeEventListener("wikilink-click", handleWikilinkClick);
   }, [vault]);
 
   // Global keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const mod = e.ctrlKey || e.metaKey;
-      if (mod && e.key === "p") { e.preventDefault(); setShowCommandPalette((v) => !v); }
-      if (mod && e.key === "s") { e.preventDefault(); saveFile(); }
-      if (mod && e.key === "b") { e.preventDefault(); setShowRightPanel((v) => !v); }
-      if (e.altKey && e.key === "d") { e.preventDefault(); openTodayNote(); }
-      if (mod && e.key === "e") { e.preventDefault(); window.dispatchEvent(new CustomEvent("toggle-preview-mode")); }
-      if (e.key === "Escape") { setShowCommandPalette(false); }
+      if (mod && e.key === "p") {
+        e.preventDefault();
+        setShowCommandPalette((v) => !v);
+      }
+      if (mod && e.key === "s") {
+        e.preventDefault();
+        saveFile();
+      }
+      if (mod && e.key === "\\") {
+        e.preventDefault();
+        setShowRightPanel((v) => !v);
+      }
+      if (e.altKey && e.key === "d") {
+        e.preventDefault();
+        openTodayNote();
+      }
+      if (e.key === "Escape") {
+        setShowCommandPalette(false);
+      }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);

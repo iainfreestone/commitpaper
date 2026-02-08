@@ -223,7 +223,7 @@ function buildCalloutDecorations(view: EditorView): DecorationSet {
   return builder.finish();
 }
 
-export const calloutPlugin = ViewPlugin.fromClass(
+const calloutPluginRef = ViewPlugin.fromClass(
   class {
     decorations: DecorationSet;
     constructor(view: EditorView) {
@@ -235,8 +235,16 @@ export const calloutPlugin = ViewPlugin.fromClass(
       }
     }
   },
-  { decorations: (v) => v.decorations },
 );
+
+// Block decorations must be provided via the facet, not the plugin's decorations option
+export const calloutPlugin = [
+  calloutPluginRef,
+  EditorView.decorations.of(
+    (view: EditorView) =>
+      view.plugin(calloutPluginRef)?.decorations ?? Decoration.none,
+  ),
+];
 
 export const calloutTheme = EditorView.baseTheme({
   ".cm-callout-title": {

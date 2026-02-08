@@ -16,7 +16,7 @@ Built with **React 19 + CodeMirror 6 + TypeScript + Vite** and the **File System
 - **Math rendering** — inline `$LaTeX$` and block `$$...$$` powered by KaTeX
 - **Mermaid diagrams** — fenced ` ```mermaid ` blocks render as interactive diagrams
 - **Note embedding** — `![[note-name]]` transcludes another note's content inline
-- **Markdown preview** — toggle between source editor and full rendered preview with Ctrl+E
+- **Live preview** — markdown renders inline as you type; move your cursor to any line to edit the raw syntax
 - **Interactive checkboxes** — `- [ ]` / `- [x]` render as clickable checkboxes
 - **Daily notes** — one-click or Alt+D to create/open today's daily note
 - **Templates** — create a `templates/` folder with variable substitution (`{{date}}`, `{{title}}`, etc.)
@@ -93,17 +93,23 @@ Your vault is just a folder. It doesn't need to be a Git repo — but if it is, 
 
 ## Keyboard Shortcuts
 
-| Shortcut       | Action                  |
-| -------------- | ----------------------- |
-| `Ctrl+S`       | Save                    |
-| `Ctrl+P`       | Command palette         |
-| `Ctrl+E`       | Toggle source / preview |
-| `Ctrl+B`       | Toggle right panel      |
-| `Alt+D`        | Today's daily note      |
-| `Ctrl+F`       | Find in file            |
-| `Ctrl+H`       | Find and replace        |
-| `Ctrl+Z`       | Undo                    |
-| `Ctrl+Shift+Z` | Redo                    |
+| Shortcut       | Action             |
+| -------------- | ------------------ |
+| `Ctrl+S`       | Save               |
+| `Ctrl+P`       | Command palette    |
+| `Ctrl+\`       | Toggle right panel |
+| `Alt+D`        | Today's daily note |
+| `Ctrl+B`       | Bold               |
+| `Ctrl+I`       | Italic             |
+| `Ctrl+K`       | Insert link        |
+| `Ctrl+1–4`     | Heading level 1–4  |
+| `Ctrl+Shift+8` | Bullet list        |
+| `Ctrl+Shift+7` | Numbered list      |
+| `Ctrl+Shift+9` | Checkbox           |
+| `Ctrl+F`       | Find in file       |
+| `Ctrl+H`       | Find and replace   |
+| `Ctrl+Z`       | Undo               |
+| `Ctrl+Shift+Z` | Redo               |
 
 ---
 

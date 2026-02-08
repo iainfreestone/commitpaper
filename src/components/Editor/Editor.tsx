@@ -1,4 +1,9 @@
-import React, { useEffect, useRef } from "react";
+import React, {
+  useEffect,
+  useRef,
+  useImperativeHandle,
+  forwardRef,
+} from "react";
 import { EditorState } from "@codemirror/state";
 import {
   EditorView,
@@ -41,6 +46,10 @@ import { calloutPlugin, calloutTheme } from "./extensions/callouts";
 import { mathPlugin, mathTheme } from "./extensions/mathRendering";
 import { mermaidPlugin, mermaidTheme } from "./extensions/mermaidRendering";
 import { embedPlugin, embedTheme } from "./extensions/noteEmbed";
+import { formattingKeymap } from "./extensions/formatting";
+import { slashCommandExtension } from "./extensions/slashCommands";
+import { bubbleMenuPlugin } from "./extensions/bubbleMenu";
+import { smartListKeymap } from "./extensions/smartLists";
 import { saveBinaryFile } from "../../lib/api";
 
 interface EditorProps {
@@ -48,12 +57,23 @@ interface EditorProps {
   filePath: string;
 }
 
-export function Editor({ content, filePath }: EditorProps) {
+export interface EditorHandle {
+  getView: () => EditorView | null;
+}
+
+export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor(
+  { content, filePath },
+  ref,
+) {
   const containerRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
   const setContent = useEditorStore((s) => s.setContent);
   const saveFile = useEditorStore((s) => s.saveFile);
   const setWordCount = useEditorStore((s) => s.setWordCount);
+
+  useImperativeHandle(ref, () => ({
+    getView: () => viewRef.current,
+  }));
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -111,6 +131,10 @@ export function Editor({ content, filePath }: EditorProps) {
         mermaidTheme,
         embedPlugin,
         embedTheme,
+        formattingKeymap, // Must come before default keymaps
+        smartListKeymap, // Must come before indentWithTab
+        ...slashCommandExtension,
+        bubbleMenuPlugin,
         saveKeymap,
         keymap.of([
           ...defaultKeymap,
@@ -218,4 +242,4 @@ export function Editor({ content, filePath }: EditorProps) {
   }, [filePath]);
 
   return <div ref={containerRef} style={{ height: "100%" }} />;
-}
+});
