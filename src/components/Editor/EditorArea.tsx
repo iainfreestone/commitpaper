@@ -1,6 +1,7 @@
 import React, { useRef } from "react";
 import { useEditorStore } from "../../stores/editorStore";
 import { Editor } from "./Editor";
+import { RawEditor } from "./RawEditor";
 import type { EditorHandle } from "./Editor";
 
 export function EditorArea() {
@@ -8,6 +9,7 @@ export function EditorArea() {
   const activeTabPath = useEditorStore((s) => s.activeTabPath);
   const closeTab = useEditorStore((s) => s.closeTab);
   const setActiveTab = useEditorStore((s) => s.setActiveTab);
+  const editorMode = useEditorStore((s) => s.editorMode);
   const editorRef = useRef<EditorHandle>(null);
 
   return (
@@ -37,7 +39,7 @@ export function EditorArea() {
       )}
       <div className="editor-container">
         {activeTabPath ? (
-          <>
+          editorMode === "rich" ? (
             <Editor
               ref={editorRef}
               key={
@@ -46,7 +48,9 @@ export function EditorArea() {
               }
               filePath={activeTabPath}
             />
-          </>
+          ) : (
+            <RawEditor key={`raw-${activeTabPath}`} filePath={activeTabPath} />
+          )
         ) : (
           <div className="editor-empty">
             <div style={{ textAlign: "center" }}>

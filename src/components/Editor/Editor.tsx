@@ -8,7 +8,11 @@ import React, {
 } from "react";
 import { Crepe } from "@milkdown/crepe";
 import { replaceAll, insert } from "@milkdown/kit/utils";
-import { editorViewCtx, commandsCtx, prosePluginsCtx } from "@milkdown/kit/core";
+import {
+  editorViewCtx,
+  commandsCtx,
+  prosePluginsCtx,
+} from "@milkdown/kit/core";
 import { TextSelection } from "@milkdown/kit/prose/state";
 import {
   useEditorStore,
@@ -20,6 +24,7 @@ import { NotePicker } from "./NotePicker";
 // Custom ProseMirror plugins
 import { calloutPlugin } from "./extensions/calloutPlugin";
 import { embedPlugin } from "./extensions/embedPlugin";
+import { linkClickPlugin } from "./extensions/linkClickPlugin";
 import { mermaidPlugin } from "./extensions/mermaidPlugin";
 
 // Crepe theme styles
@@ -78,7 +83,10 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor(
         setNotePickerAnchor({ x: coords.left, y: coords.bottom + 4 });
       });
     } catch {
-      setNotePickerAnchor({ x: window.innerWidth / 2 - 140, y: window.innerHeight / 3 });
+      setNotePickerAnchor({
+        x: window.innerWidth / 2 - 140,
+        y: window.innerHeight / 3,
+      });
     }
     setNotePickerOpen(true);
   }, []);
@@ -148,28 +156,24 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor(
         },
         [Crepe.Feature.BlockEdit]: {
           buildMenu: (builder: any) => {
-            builder
-              .addGroup("notes", "Notes")
-              .addItem("notelink", {
-                label: "Link to Note",
-                icon: linkIcon,
-                onRun: (_ctx: any) => {
-                  openNotePicker(true);
-                },
-              });
+            builder.addGroup("notes", "Notes").addItem("notelink", {
+              label: "Link to Note",
+              icon: linkIcon,
+              onRun: (_ctx: any) => {
+                openNotePicker(true);
+              },
+            });
           },
         },
         [Crepe.Feature.Toolbar]: {
           buildToolbar: (builder: any) => {
-            builder
-              .addGroup("notes", "Notes")
-              .addItem("notelink", {
-                icon: linkIcon,
-                active: () => false,
-                onRun: (_ctx: any) => {
-                  openNotePicker();
-                },
-              });
+            builder.addGroup("notes", "Notes").addItem("notelink", {
+              icon: linkIcon,
+              active: () => false,
+              onRun: (_ctx: any) => {
+                openNotePicker();
+              },
+            });
           },
         },
         [Crepe.Feature.ImageBlock]: {
@@ -178,7 +182,10 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor(
             const imagePath = `attachments/pasted-${Date.now()}.${ext}`;
             try {
               const buffer = await file.arrayBuffer();
-              await saveBinaryFile(imagePath, Array.from(new Uint8Array(buffer)));
+              await saveBinaryFile(
+                imagePath,
+                Array.from(new Uint8Array(buffer)),
+              );
               return imagePath;
             } catch (err) {
               console.error("Failed to upload image:", err);
@@ -195,6 +202,7 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor(
         ...prev,
         calloutPlugin,
         embedPlugin,
+        linkClickPlugin,
         mermaidPlugin,
       ]);
     });

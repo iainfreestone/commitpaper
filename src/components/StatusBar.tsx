@@ -13,6 +13,8 @@ export function StatusBar() {
   const wordCount = useEditorStore((s) => s.wordCount);
   const currentBranch = useGitStore((s) => s.currentBranch);
   const modifiedCount = useGitStore((s) => s.modifiedCount);
+  const editorMode = useEditorStore((s) => s.editorMode);
+  const toggleEditorMode = useEditorStore((s) => s.toggleEditorMode);
 
   const handleSwitchVault = async () => {
     try {
@@ -85,6 +87,15 @@ export function StatusBar() {
       )}
 
       <div className="status-bar-right">
+        {activeTabPath && (
+          <button
+            className="status-bar-item editor-mode-toggle"
+            onClick={toggleEditorMode}
+            title={`Switch to ${editorMode === "rich" ? "raw markdown" : "rich editor"} (Ctrl+E)`}
+          >
+            {editorMode === "rich" ? "◇ Rich" : "⟨/⟩ Raw"}
+          </button>
+        )}
         {activeTabPath && wordCount > 0 && (
           <>
             <div className="status-bar-item">

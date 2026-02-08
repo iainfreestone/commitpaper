@@ -1,12 +1,15 @@
 import { create } from "zustand";
 import * as api from "../lib/api";
 
+export type EditorMode = "rich" | "raw";
+
 interface EditorStore {
   openTabs: TabInfo[];
   activeTabPath: string | null;
   content: string;
   isDirty: boolean;
   wordCount: number;
+  editorMode: EditorMode;
 
   openFile: (path: string) => Promise<void>;
   closeTab: (path: string, force?: boolean) => void;
@@ -16,6 +19,7 @@ interface EditorStore {
   setWordCount: (count: number) => void;
   saveFile: () => Promise<void>;
   renameActiveTab: (oldPath: string, newPath: string) => void;
+  toggleEditorMode: () => void;
 }
 
 export interface TabInfo {
@@ -141,6 +145,7 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
   content: "",
   isDirty: false,
   wordCount: 0,
+  editorMode: "rich" as EditorMode,
 
   openFile: async (path: string) => {
     try {
@@ -354,5 +359,17 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
         t.path === oldPath ? { ...t, path: newPath, name: newName } : t,
       ),
     }));
+  },
+
+  toggleEditorMode: () => {
+    const { editorMode } = get();
+    if (editorMode === "rich") {
+      // Grab fresh markdown from Milkdown before switching away
+      const freshContent = getFreshContent();
+      set({ editorMode: "raw", content: freshContent });
+    } else {
+      // Switching back to rich — content in store is already up-to-date
+      set({ editorMode: "rich" });
+    }
   },
 }));

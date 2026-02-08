@@ -1945,3 +1945,62 @@ textarea:focus {
 /* ============================================================
    Formatting Toolbar
    ============================================================ */
+
+/* ============================================================
+   Raw Markdown Editor
+   ============================================================ */
+
+.raw-editor-wrapper {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.raw-editor-textarea {
+  flex: 1;
+  width: 100%;
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 16px 40px;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  border: none;
+  outline: none;
+  resize: none;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  line-height: 1.7;
+  tab-size: 4;
+  white-space: pre-wrap;
+  overflow-y: auto;
+  caret-color: var(--accent);
+}
+
+.raw-editor-textarea::selection {
+  background: var(--bg-active);
+}
+
+.raw-editor-textarea::placeholder {
+  color: var(--text-muted);
+}
+
+/* Editor mode toggle button in status bar */
+.editor-mode-toggle {
+  background: none;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 1px 8px;
+  font-size: 11px;
+  font-family: var(--font-mono);
+  transition:
+    color 0.15s,
+    border-color 0.15s;
+}
+
+.editor-mode-toggle:hover {
+  color: var(--text-primary);
+  border-color: var(--accent);
+}

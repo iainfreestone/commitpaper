@@ -142,6 +142,10 @@ export default function App() {
         e.preventDefault();
         setShowRightPanel((v) => !v);
       }
+      if (mod && e.key === "e") {
+        e.preventDefault();
+        useEditorStore.getState().toggleEditorMode();
+      }
       if (e.altKey && e.key === "d") {
         e.preventDefault();
         openTodayNote();
