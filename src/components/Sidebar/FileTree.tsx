@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { useVaultStore } from "../../stores/vaultStore";
 import { useEditorStore } from "../../stores/editorStore";
 import {
@@ -8,24 +8,31 @@ import {
   renameFile,
   getNextUntitledName,
 } from "../../lib/api";
+import { getSettings, updateSettings } from "../../lib/settings";
 import { ContextMenu, ContextMenuItem } from "../ContextMenu";
 import type { FileTreeNode } from "../../lib/api";
 
 function useStarred() {
   const [starred, setStarred] = useState<string[]>(() => {
-    try {
-      return JSON.parse(localStorage.getItem("commitpaper-starred") || "[]");
-    } catch {
-      return [];
-    }
+    return getSettings().starred;
   });
+
+  // Re-sync when vault settings are loaded
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const settings = (e as CustomEvent).detail;
+      if (settings?.starred) setStarred(settings.starred);
+    };
+    window.addEventListener("vault-settings-loaded", handler);
+    return () => window.removeEventListener("vault-settings-loaded", handler);
+  }, []);
 
   const toggle = useCallback((path: string) => {
     setStarred((prev) => {
       const next = prev.includes(path)
         ? prev.filter((p) => p !== path)
         : [...prev, path];
-      localStorage.setItem("commitpaper-starred", JSON.stringify(next));
+      updateSettings({ starred: next });
       return next;
     });
   }, []);

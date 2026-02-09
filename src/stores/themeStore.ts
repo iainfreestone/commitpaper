@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { getSettings, updateSettings } from "../lib/settings";
 
 export type ThemeId =
   | "catppuccin-mocha"
@@ -27,23 +28,12 @@ export const themes: ThemeMeta[] = [
   { id: "crepe-light", label: "Crepe Light", isDark: false },
 ];
 
-const STORAGE_KEY = "commitpaper-theme";
-
-function loadSavedTheme(): ThemeId {
-  try {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved && themes.some((t) => t.id === saved)) {
-      return saved as ThemeId;
-    }
-  } catch {}
-  return "catppuccin-mocha";
+function isValidTheme(id: string): id is ThemeId {
+  return themes.some((t) => t.id === id);
 }
 
 function applyThemeToDOM(themeId: ThemeId) {
   document.documentElement.setAttribute("data-theme", themeId);
-  try {
-    localStorage.setItem(STORAGE_KEY, themeId);
-  } catch {}
 }
 
 interface ThemeStore {
@@ -51,13 +41,33 @@ interface ThemeStore {
   setTheme: (theme: ThemeId) => void;
 }
 
-// Apply the initial theme immediately (before React renders)
-applyThemeToDOM(loadSavedTheme());
+// Apply a default theme immediately so the page isn't un-themed before vault loads.
+// The real saved theme is applied once the vault settings are loaded.
+const initialTheme: ThemeId = (() => {
+  // Try localStorage first as a fast fallback (will be cleared after migration)
+  try {
+    const saved = localStorage.getItem("commitpaper-theme");
+    if (saved && isValidTheme(saved)) return saved;
+  } catch {}
+  return "catppuccin-mocha";
+})();
+applyThemeToDOM(initialTheme);
 
 export const useThemeStore = create<ThemeStore>((set) => ({
-  theme: loadSavedTheme(),
+  theme: initialTheme,
   setTheme: (theme: ThemeId) => {
     applyThemeToDOM(theme);
+    updateSettings({ theme });
     set({ theme });
   },
 }));
+
+// Listen for vault settings being loaded and apply the saved theme
+window.addEventListener("vault-settings-loaded", (e: Event) => {
+  const settings = (e as CustomEvent).detail;
+  const themeId = settings?.theme;
+  if (themeId && isValidTheme(themeId)) {
+    applyThemeToDOM(themeId);
+    useThemeStore.setState({ theme: themeId });
+  }
+});

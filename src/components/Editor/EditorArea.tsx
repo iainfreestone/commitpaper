@@ -17,6 +17,18 @@ export function EditorArea() {
   useEffect(() => {
     document.documentElement.setAttribute("data-editor-width", editorWidth);
   }, [editorWidth]);
+
+  // Apply editorWidth from vault settings when loaded
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const settings = (e as CustomEvent).detail;
+      if (settings?.editorWidth) {
+        useEditorStore.getState().setEditorWidth(settings.editorWidth);
+      }
+    };
+    window.addEventListener("vault-settings-loaded", handler);
+    return () => window.removeEventListener("vault-settings-loaded", handler);
+  }, []);
   
   return (
     <div className="editor-area">

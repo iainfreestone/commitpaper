@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import * as api from "../lib/api";
+import { getSettings, updateSettings } from "../lib/settings";
 
 export type EditorMode = "rich" | "raw";
 export type EditorWidth = "readable" | "full";
@@ -149,7 +150,7 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
   isDirty: false,
   wordCount: 0,
   editorMode: "rich" as EditorMode,
-  editorWidth: (localStorage.getItem("commitpaper-editor-width") as EditorWidth) || "readable",
+  editorWidth: getSettings().editorWidth,
 
   openFile: async (path: string) => {
     try {
@@ -378,7 +379,7 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
   },
 
   setEditorWidth: (width: EditorWidth) => {
-    localStorage.setItem("commitpaper-editor-width", width);
+    updateSettings({ editorWidth: width });
     set({ editorWidth: width });
   },
 }));

@@ -6,6 +6,7 @@
 import git from "isomorphic-git";
 import http from "isomorphic-git/http/web";
 import { createFSAdapter } from "./fs-adapter";
+import { getSettings, updateSettings } from "./settings";
 import type { IsomorphicGitFS } from "./fs-adapter";
 import type {
   FileStatus,
@@ -19,27 +20,18 @@ import type {
 let fs: IsomorphicGitFS | null = null;
 let dir = "/"; // isomorphic-git needs a "dir" string
 
-// The user's configured author info (persisted in localStorage)
+// The user's configured author info (persisted in .commitpaper/settings.json)
 interface GitAuthorConfig {
   name: string;
   email: string;
 }
 
 function getAuthorConfig(): GitAuthorConfig {
-  try {
-    const stored = localStorage.getItem("commitpaper-git-author");
-    if (stored) return JSON.parse(stored);
-  } catch {
-    // ignore
-  }
-  return { name: "CommitPaper User", email: "user@commitpaper.local" };
+  return getSettings().gitAuthor;
 }
 
 export function setAuthorConfig(name: string, email: string): void {
-  localStorage.setItem(
-    "commitpaper-git-author",
-    JSON.stringify({ name, email }),
-  );
+  updateSettings({ gitAuthor: { name, email } });
 }
 
 export function getAuthor(): GitAuthorConfig {
