@@ -11,6 +11,8 @@ const SETTINGS_FILE = "settings.json";
 export interface VaultSettings {
   theme: string;
   editorWidth: "readable" | "full";
+  fontSize: number;
+  lineNumbers: boolean;
   starred: string[];
   gitAuthor: { name: string; email: string };
 }
@@ -18,6 +20,8 @@ export interface VaultSettings {
 const DEFAULTS: VaultSettings = {
   theme: "catppuccin-mocha",
   editorWidth: "readable",
+  fontSize: 15,
+  lineNumbers: false,
   starred: [],
   gitAuthor: { name: "CommitPaper User", email: "user@commitpaper.local" },
 };

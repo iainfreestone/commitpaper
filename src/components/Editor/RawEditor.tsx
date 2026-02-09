@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useCallback } from "react";
+import React, { useRef, useEffect, useCallback, useMemo } from "react";
 import {
   useEditorStore,
   registerEditorContentProvider,
@@ -13,7 +13,9 @@ export function RawEditor({ filePath }: RawEditorProps) {
   const setContent = useEditorStore((s) => s.setContent);
   const saveFile = useEditorStore((s) => s.saveFile);
   const setWordCount = useEditorStore((s) => s.setWordCount);
+  const lineNumbers = useEditorStore((s) => s.lineNumbers);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const lineNoRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef(content);
 
   // Keep contentRef in sync so the provider always returns the latest
@@ -103,16 +105,51 @@ export function RawEditor({ filePath }: RawEditorProps) {
     };
   }, [setContent]);
 
+  // Sync line number gutter scroll with textarea
+  const handleScroll = useCallback(() => {
+    if (lineNoRef.current && textareaRef.current) {
+      lineNoRef.current.scrollTop = textareaRef.current.scrollTop;
+    }
+  }, []);
+
+  // Compute line numbers string
+  const lineCount = useMemo(() => {
+    if (!lineNumbers) return 0;
+    return content.split("\n").length;
+  }, [content, lineNumbers]);
+
+  const lineNos = useMemo(() => {
+    if (!lineNumbers || lineCount === 0) return "";
+    return Array.from({ length: lineCount }, (_, i) => i + 1).join("\n");
+  }, [lineNumbers, lineCount]);
+
   return (
     <div className="raw-editor-wrapper">
-      <textarea
-        ref={textareaRef}
-        className="raw-editor-textarea"
-        value={content}
-        onChange={handleChange}
-        onKeyDown={handleKeyDown}
-        spellCheck={false}
-      />
+      {lineNumbers ? (
+        <div className="raw-editor-with-lines">
+          <div ref={lineNoRef} className="raw-line-numbers" aria-hidden="true">
+            {lineNos}
+          </div>
+          <textarea
+            ref={textareaRef}
+            className="raw-editor-textarea"
+            value={content}
+            onChange={handleChange}
+            onKeyDown={handleKeyDown}
+            onScroll={handleScroll}
+            spellCheck={false}
+          />
+        </div>
+      ) : (
+        <textarea
+          ref={textareaRef}
+          className="raw-editor-textarea"
+          value={content}
+          onChange={handleChange}
+          onKeyDown={handleKeyDown}
+          spellCheck={false}
+        />
+      )}
     </div>
   );
 }

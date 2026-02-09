@@ -13,6 +13,8 @@ interface EditorStore {
   wordCount: number;
   editorMode: EditorMode;
   editorWidth: EditorWidth;
+  fontSize: number;
+  lineNumbers: boolean;
 
   openFile: (path: string) => Promise<void>;
   closeTab: (path: string, force?: boolean) => void;
@@ -24,6 +26,8 @@ interface EditorStore {
   renameActiveTab: (oldPath: string, newPath: string) => void;
   toggleEditorMode: () => void;
   setEditorWidth: (width: EditorWidth) => void;
+  setFontSize: (size: number) => void;
+  setLineNumbers: (on: boolean) => void;
 }
 
 export interface TabInfo {
@@ -151,6 +155,8 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
   wordCount: 0,
   editorMode: "rich" as EditorMode,
   editorWidth: getSettings().editorWidth,
+  fontSize: getSettings().fontSize,
+  lineNumbers: getSettings().lineNumbers,
 
   openFile: async (path: string) => {
     try {
@@ -381,5 +387,15 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
   setEditorWidth: (width: EditorWidth) => {
     updateSettings({ editorWidth: width });
     set({ editorWidth: width });
+  },
+
+  setFontSize: (size: number) => {
+    updateSettings({ fontSize: size });
+    set({ fontSize: size });
+  },
+
+  setLineNumbers: (on: boolean) => {
+    updateSettings({ lineNumbers: on });
+    set({ lineNumbers: on });
   },
 }));

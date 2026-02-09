@@ -11,25 +11,35 @@ export function EditorArea() {
   const setActiveTab = useEditorStore((s) => s.setActiveTab);
   const editorMode = useEditorStore((s) => s.editorMode);
   const editorWidth = useEditorStore((s) => s.editorWidth);
+  const fontSize = useEditorStore((s) => s.fontSize);
   const editorRef = useRef<EditorHandle>(null);
 
-  // Sync editor width to <html> element so CSS can target it globally
+  // Sync editor width and font size to <html> element so CSS can target globally
   useEffect(() => {
     document.documentElement.setAttribute("data-editor-width", editorWidth);
   }, [editorWidth]);
 
-  // Apply editorWidth from vault settings when loaded
+  useEffect(() => {
+    document.documentElement.style.setProperty(
+      "--editor-font-size",
+      `${fontSize}px`,
+    );
+  }, [fontSize]);
+
+  // Apply settings from vault when loaded
   useEffect(() => {
     const handler = (e: Event) => {
-      const settings = (e as CustomEvent).detail;
-      if (settings?.editorWidth) {
-        useEditorStore.getState().setEditorWidth(settings.editorWidth);
-      }
+      const s = (e as CustomEvent).detail;
+      if (s?.editorWidth)
+        useEditorStore.getState().setEditorWidth(s.editorWidth);
+      if (s?.fontSize) useEditorStore.getState().setFontSize(s.fontSize);
+      if (s?.lineNumbers !== undefined)
+        useEditorStore.getState().setLineNumbers(s.lineNumbers);
     };
     window.addEventListener("vault-settings-loaded", handler);
     return () => window.removeEventListener("vault-settings-loaded", handler);
   }, []);
-  
+
   return (
     <div className="editor-area">
       {openTabs.length > 0 && (

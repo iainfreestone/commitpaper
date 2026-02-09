@@ -7,9 +7,15 @@ const widthOptions: { value: EditorWidth; label: string; desc: string }[] = [
   { value: "full", label: "Full width", desc: "Use all available space" },
 ];
 
+const fontSizeOptions = [13, 14, 15, 16, 17, 18, 20];
+
 export function SettingsMenu() {
   const editorWidth = useEditorStore((s) => s.editorWidth);
   const setEditorWidth = useEditorStore((s) => s.setEditorWidth);
+  const fontSize = useEditorStore((s) => s.fontSize);
+  const setFontSize = useEditorStore((s) => s.setFontSize);
+  const lineNumbers = useEditorStore((s) => s.lineNumbers);
+  const setLineNumbers = useEditorStore((s) => s.setLineNumbers);
   const [open, setOpen] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
 
@@ -67,6 +73,53 @@ export function SettingsMenu() {
                 </button>
               ))}
             </div>
+          </div>
+
+          {/* Font size */}
+          <div className="settings-section">
+            <div className="settings-section-label">Font size</div>
+            <div className="settings-font-size-row">
+              <button
+                className="settings-font-btn"
+                onClick={() => setFontSize(Math.max(12, fontSize - 1))}
+                title="Decrease"
+              >
+                −
+              </button>
+              <span className="settings-font-value">{fontSize}px</span>
+              <button
+                className="settings-font-btn"
+                onClick={() => setFontSize(Math.min(24, fontSize + 1))}
+                title="Increase"
+              >
+                +
+              </button>
+              {fontSize !== 15 && (
+                <button
+                  className="settings-font-btn settings-font-reset"
+                  onClick={() => setFontSize(15)}
+                  title="Reset to default (15px)"
+                >
+                  ↺
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Line numbers */}
+          <div className="settings-section">
+            <label className="settings-toggle-row">
+              <span className="settings-section-label" style={{ margin: 0 }}>
+                Line numbers
+              </span>
+              <span className="settings-toggle-hint">Raw editor only</span>
+              <input
+                type="checkbox"
+                checked={lineNumbers}
+                onChange={(e) => setLineNumbers(e.target.checked)}
+                className="settings-checkbox"
+              />
+            </label>
           </div>
         </div>
       )}
