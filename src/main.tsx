@@ -1,3 +1,7 @@
+import { Buffer } from "buffer";
+// Polyfill Buffer for isomorphic-git (uses Node.js Buffer internally)
+(window as unknown as Record<string, unknown>).Buffer = Buffer;
+
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter, Routes, Route } from "react-router-dom";

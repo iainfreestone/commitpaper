@@ -4,6 +4,7 @@
 // ============================================================
 
 import { buildSearchIndex, searchIndex, addToIndex } from "./search";
+import * as gitOps from "./git";
 
 // ============================================================
 // Types
@@ -294,6 +295,9 @@ export async function openVault(path: string): Promise<VaultConfig> {
 
   vaultConfig = { path: name, name, is_git_repo: isGitRepo };
 
+  // Initialize isomorphic-git FS adapter
+  gitOps.initGitFS(rootHandle);
+
   // Build the note index
   await rebuildNoteIndex();
 
@@ -365,8 +369,11 @@ function extractLinks(content: string): string[] {
 }
 
 export async function initVaultRepo(): Promise<void> {
-  // Can't init git repos from browser — no-op
-  console.warn("Git init is not available in browser mode");
+  await gitOps.initVaultRepo();
+  // Update vault config to reflect new git repo
+  if (vaultConfig) {
+    vaultConfig.is_git_repo = true;
+  }
 }
 
 export async function getBacklinks(path: string): Promise<string[]> {
@@ -653,116 +660,104 @@ export async function saveBinaryFile(
 }
 
 // ============================================================
-// Git commands (read-only awareness from .git/)
+// Git commands (powered by isomorphic-git)
 // ============================================================
 
 export async function gitStatus(): Promise<FileStatus[]> {
-  // Return our tracked modified files as "Modified" + untracked
-  return Array.from(modifiedFiles).map((path) => ({
-    path,
-    status: "Modified" as const,
-    staged: false,
-  }));
+  if (!vaultConfig?.is_git_repo) return [];
+  try {
+    return await gitOps.gitStatus();
+  } catch (e) {
+    console.warn("gitStatus error:", e);
+    return [];
+  }
 }
 
-export async function gitStageFile(_path: string): Promise<void> {
-  console.warn("Git staging is not available in browser mode");
+export async function gitStageFile(path: string): Promise<void> {
+  await gitOps.gitStageFile(path);
 }
 
-export async function gitUnstageFile(_path: string): Promise<void> {
-  console.warn("Git unstaging is not available in browser mode");
+export async function gitUnstageFile(path: string): Promise<void> {
+  await gitOps.gitUnstageFile(path);
 }
 
 export async function gitStageAll(): Promise<void> {
-  console.warn("Git stage all is not available in browser mode");
+  await gitOps.gitStageAll();
 }
 
-export async function gitCommit(_message: string): Promise<string> {
-  console.warn("Git commit is not available in browser mode");
-  return "";
+export async function gitCommit(message: string): Promise<string> {
+  return await gitOps.gitCommit(message);
 }
 
 export async function gitCurrentBranch(): Promise<string> {
-  if (!rootHandle) return "";
+  if (!vaultConfig?.is_git_repo) return "";
   try {
-    const gitDir = await rootHandle.getDirectoryHandle(".git");
-    const headFile = await gitDir.getFileHandle("HEAD");
-    const file = await headFile.getFile();
-    const text = await file.text();
-    // Parse "ref: refs/heads/main\n"
-    const match = text.trim().match(/^ref:\s*refs\/heads\/(.+)$/);
-    if (match) return match[1];
-    // Detached HEAD — return short hash
-    return text.trim().substring(0, 8);
+    return await gitOps.gitCurrentBranch();
   } catch {
     return "";
   }
 }
 
 export async function gitBranches(): Promise<BranchInfo[]> {
-  if (!rootHandle) return [];
+  if (!vaultConfig?.is_git_repo) return [];
   try {
-    const currentBranch = await gitCurrentBranch();
-    const gitDir = await rootHandle.getDirectoryHandle(".git");
-    const refsDir = await gitDir.getDirectoryHandle("refs");
-    const headsDir = await refsDir.getDirectoryHandle("heads");
-
-    const branches: BranchInfo[] = [];
-    for await (const [name, handle] of headsDir.entries()) {
-      if (handle.kind === "file") {
-        branches.push({
-          name,
-          is_head: name === currentBranch,
-          upstream: null,
-          ahead: 0,
-          behind: 0,
-        });
-      }
-    }
-    return branches;
+    return await gitOps.gitBranches();
   } catch {
     return [];
   }
 }
 
-export async function gitCreateBranch(_name: string): Promise<void> {
-  console.warn("Git branch creation is not available in browser mode");
+export async function gitCreateBranch(name: string): Promise<void> {
+  await gitOps.gitCreateBranch(name);
 }
 
-export async function gitCheckoutBranch(_name: string): Promise<void> {
-  console.warn("Git checkout is not available in browser mode");
+export async function gitCheckoutBranch(name: string): Promise<void> {
+  await gitOps.gitCheckoutBranch(name);
 }
 
-export async function gitLog(_maxCount?: number): Promise<CommitInfo[]> {
-  // Can't read git log from browser without parsing pack files
-  return [];
+export async function gitLog(maxCount?: number): Promise<CommitInfo[]> {
+  if (!vaultConfig?.is_git_repo) return [];
+  try {
+    return await gitOps.gitLog(maxCount);
+  } catch {
+    return [];
+  }
 }
 
 export async function gitFileLog(
-  _filePath: string,
-  _maxCount?: number,
+  filePath: string,
+  maxCount?: number,
 ): Promise<CommitInfo[]> {
-  return [];
+  if (!vaultConfig?.is_git_repo) return [];
+  try {
+    return await gitOps.gitFileLog(filePath, maxCount);
+  } catch {
+    return [];
+  }
 }
 
 export async function gitFileAtCommit(
-  _commitId: string,
-  _filePath: string,
+  commitId: string,
+  filePath: string,
 ): Promise<string> {
-  throw new Error("File history is not available in browser mode");
+  return await gitOps.gitFileAtCommit(commitId, filePath);
 }
 
 export async function gitDiff(): Promise<FileDiff[]> {
-  return [];
+  if (!vaultConfig?.is_git_repo) return [];
+  try {
+    return await gitOps.gitDiff();
+  } catch {
+    return [];
+  }
 }
 
 export async function gitPull(): Promise<string> {
-  console.warn("Git pull is not available in browser mode");
-  return "Git pull is not available in browser mode. Use your preferred Git tool.";
+  return "Git pull requires remote configuration. Use your terminal for now.";
 }
 
 export async function gitPush(): Promise<void> {
-  console.warn("Git push is not available in browser mode");
+  await gitOps.gitPush();
 }
 
 export async function gitConflicts(): Promise<ConflictFile[]> {
