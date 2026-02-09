@@ -18,7 +18,12 @@ import {
   useEditorStore,
   registerEditorContentProvider,
 } from "../../stores/editorStore";
-import { saveBinaryFile, writeFile, reindexFile, readFileAsObjectURL } from "../../lib/api";
+import {
+  saveBinaryFile,
+  writeFile,
+  reindexFile,
+  readFileAsObjectURL,
+} from "../../lib/api";
 import { NotePicker } from "./NotePicker";
 
 // Custom ProseMirror plugins
