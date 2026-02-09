@@ -55,23 +55,36 @@ export interface IsomorphicGitFS {
 }
 
 function createErrnoError(code: string, syscall: string, path: string): Error {
-  const err = new Error(`${code}: ${syscall} '${path}'`) as Error & { code: string; errno: number };
+  const err = new Error(`${code}: ${syscall} '${path}'`) as Error & {
+    code: string;
+    errno: number;
+  };
   err.code = code;
-  err.errno = code === 'ENOENT' ? -2 : code === 'ENOTDIR' ? -20 : code === 'EEXIST' ? -17 : -1;
+  err.errno =
+    code === "ENOENT"
+      ? -2
+      : code === "ENOTDIR"
+        ? -20
+        : code === "EEXIST"
+          ? -17
+          : -1;
   return err;
 }
 
 function normalizePath(p: string): string {
   // Remove leading slashes (all of them), normalize separators
-  let normalized = p.replace(/\\/g, "/").replace(/^\/+/, "").replace(/\/+$/, "");
+  let normalized = p
+    .replace(/\\/g, "/")
+    .replace(/^\/+/, "")
+    .replace(/\/+$/, "");
   // '.' and '' both mean root
-  if (normalized === '.' || normalized === '') return '';
+  if (normalized === "." || normalized === "") return "";
   // Remove leading './' prefix(es) and collapse '//' to '/'
-  normalized = normalized.replace(/^(\.\/)+/g, '').replace(/\/+/g, '/');
+  normalized = normalized.replace(/^(\.\/)+/g, "").replace(/\/+/g, "/");
   // Remove trailing '/.' segments
-  normalized = normalized.replace(/\/\.$/g, '');
+  normalized = normalized.replace(/\/\.$/g, "");
   // If it became empty or '.', it's root
-  if (normalized === '.' || normalized === '') return '';
+  if (normalized === "." || normalized === "") return "";
   return normalized;
 }
 
@@ -79,11 +92,7 @@ function splitPath(p: string): string[] {
   return normalizePath(p).split("/").filter(Boolean);
 }
 
-function makeStat(
-  type: "file" | "dir",
-  size: number,
-  mtime: number,
-): FsStat {
+function makeStat(type: "file" | "dir", size: number, mtime: number): FsStat {
   return {
     type,
     size,
@@ -131,7 +140,7 @@ export function createFSAdapter(
       const parts = splitPath(path);
       const fileName = parts.pop();
       if (!fileName) {
-        throw createErrnoError('ENOENT', 'open', path);
+        throw createErrnoError("ENOENT", "open", path);
       }
       try {
         const dir = await getDirHandle(rootHandle, parts);
@@ -145,7 +154,7 @@ export function createFSAdapter(
         return new Uint8Array(buffer);
       } catch (e) {
         console.warn(`[fs-adapter] readFile failed for path: '${path}'`, e);
-        throw createErrnoError('ENOENT', 'open', path);
+        throw createErrnoError("ENOENT", "open", path);
       }
     },
 
@@ -176,7 +185,7 @@ export function createFSAdapter(
         const dir = await getDirHandle(rootHandle, parts);
         await dir.removeEntry(fileName);
       } catch {
-        throw createErrnoError('ENOENT', 'unlink', path);
+        throw createErrnoError("ENOENT", "unlink", path);
       }
     },
 
@@ -190,7 +199,7 @@ export function createFSAdapter(
           dir = await getDirHandle(rootHandle, parts);
         }
       } catch {
-        throw createErrnoError('ENOENT', 'scandir', path);
+        throw createErrnoError("ENOENT", "scandir", path);
       }
 
       const entries: string[] = [];
@@ -248,8 +257,11 @@ export function createFSAdapter(
           ? await getDirHandle(rootHandle, parts)
           : rootHandle;
       } catch (e) {
-        console.warn(`[fs-adapter] stat: parent dir not found for '${path}' (normalized: '${normalized}')`, e);
-        throw createErrnoError('ENOENT', 'stat', path);
+        console.warn(
+          `[fs-adapter] stat: parent dir not found for '${path}' (normalized: '${normalized}')`,
+          e,
+        );
+        throw createErrnoError("ENOENT", "stat", path);
       }
 
       // Try as file first
@@ -265,7 +277,7 @@ export function createFSAdapter(
         await parent.getDirectoryHandle(name);
         return makeStat("dir", 0, Date.now());
       } catch {
-        throw createErrnoError('ENOENT', 'stat', path);
+        throw createErrnoError("ENOENT", "stat", path);
       }
     },
 

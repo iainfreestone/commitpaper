@@ -250,7 +250,14 @@ export function GitPanel() {
       )}
 
       {/* Quick actions */}
-      <div style={{ padding: "8px", display: "flex", flexDirection: "column", gap: "4px" }}>
+      <div
+        style={{
+          padding: "8px",
+          display: "flex",
+          flexDirection: "column",
+          gap: "4px",
+        }}
+      >
         <button
           className="git-commit-btn"
           onClick={() => quickCommit(commitMessage || undefined)}
@@ -298,9 +305,7 @@ export function GitPanel() {
             alignItems: "center",
           }}
         >
-          <span>
-            Staged ({stagedFiles.length})
-          </span>
+          <span>Staged ({stagedFiles.length})</span>
           {stagedFiles.length > 0 && (
             <button
               className="git-action-btn"
@@ -351,9 +356,7 @@ export function GitPanel() {
             alignItems: "center",
           }}
         >
-          <span>
-            Changes ({unstagedFiles.length})
-          </span>
+          <span>Changes ({unstagedFiles.length})</span>
           {unstagedFiles.length > 0 && (
             <button
               className="git-action-btn"
@@ -495,7 +498,9 @@ export function GitPanel() {
       </div>
 
       {/* Refresh */}
-      <div style={{ padding: "8px", borderTop: "1px solid var(--border-color)" }}>
+      <div
+        style={{ padding: "8px", borderTop: "1px solid var(--border-color)" }}
+      >
         <button
           className="git-commit-btn git-commit-btn-secondary"
           onClick={refreshAll}

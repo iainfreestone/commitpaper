@@ -283,7 +283,11 @@ export async function gitPush(
   if (!url) {
     // Try to read from git config
     try {
-      const config = await git.getConfig({ fs: _fs, dir, path: `remote.${remote}.url` });
+      const config = await git.getConfig({
+        fs: _fs,
+        dir,
+        path: `remote.${remote}.url`,
+      });
       if (config) url = config;
     } catch {
       // ignore
@@ -293,7 +297,7 @@ export async function gitPush(
   if (!url) {
     throw new Error(
       `No remote URL configured for '${remote}'. Add a remote first:\n` +
-      `git remote add origin <url>`,
+        `git remote add origin <url>`,
     );
   }
 
@@ -418,7 +422,11 @@ export async function gitDiff(): Promise<FileDiff[]> {
       // Get HEAD version
       if (head === 1) {
         try {
-          const headCommit = await git.resolveRef({ fs: _fs, dir, ref: "HEAD" });
+          const headCommit = await git.resolveRef({
+            fs: _fs,
+            dir,
+            ref: "HEAD",
+          });
           const blob = await git.readBlob({
             fs: _fs,
             dir,
@@ -437,7 +445,8 @@ export async function gitDiff(): Promise<FileDiff[]> {
           const data = await _fs.promises.readFile(filepath, {
             encoding: "utf8",
           });
-          newContent = typeof data === "string" ? data : new TextDecoder().decode(data);
+          newContent =
+            typeof data === "string" ? data : new TextDecoder().decode(data);
         } catch {
           newContent = "";
         }
@@ -471,7 +480,11 @@ function generateSimpleDiff(oldText: string, newText: string): DiffHunk[] {
 
   while (i < oldLines.length || j < newLines.length) {
     // Skip matching lines
-    if (i < oldLines.length && j < newLines.length && oldLines[i] === newLines[j]) {
+    if (
+      i < oldLines.length &&
+      j < newLines.length &&
+      oldLines[i] === newLines[j]
+    ) {
       i++;
       j++;
       continue;

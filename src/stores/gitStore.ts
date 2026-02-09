@@ -153,7 +153,8 @@ export const useGitStore = create<GitStore>((set, get) => ({
   quickCommit: async (message?: string) => {
     const { refreshAll } = get();
     const now = new Date();
-    const autoMsg = message?.trim() ||
+    const autoMsg =
+      message?.trim() ||
       `Update ${now.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })} ${now.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}`;
     try {
       set({ isLoading: true, gitWarning: null });
@@ -177,12 +178,19 @@ export const useGitStore = create<GitStore>((set, get) => ({
       set({ isLoading: true, gitWarning: null });
       await quickCommit(message);
       await api.gitPush();
-      set({ gitSuccess: get().gitSuccess?.replace("Committed", "Committed & pushed") || "Pushed" });
+      set({
+        gitSuccess:
+          get().gitSuccess?.replace("Committed", "Committed & pushed") ||
+          "Pushed",
+      });
       await refreshAll();
     } catch (e) {
       const errMsg = String(e);
       if (errMsg.includes("No remote URL")) {
-        set({ gitWarning: "No remote configured. Add a remote with: git remote add origin <url>" });
+        set({
+          gitWarning:
+            "No remote configured. Add a remote with: git remote add origin <url>",
+        });
       } else {
         set({ gitWarning: `Push failed: ${e}` });
       }
