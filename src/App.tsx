@@ -8,7 +8,6 @@ import { EditorArea } from "./components/Editor/EditorArea";
 import { RightPanel } from "./components/RightPanel/RightPanel";
 import { StatusBar } from "./components/StatusBar";
 import { CommandPalette } from "./components/CommandPalette";
-import { openTodayNote } from "./components/Sidebar/DailyNotes";
 import {
   resolveWikilink,
   startFileWatching,
@@ -145,10 +144,6 @@ export default function App() {
       if (mod && e.key === "e") {
         e.preventDefault();
         useEditorStore.getState().toggleEditorMode();
-      }
-      if (e.altKey && e.key === "d") {
-        e.preventDefault();
-        openTodayNote();
       }
       if (e.key === "Escape") {
         setShowCommandPalette(false);
