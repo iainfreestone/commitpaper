@@ -515,6 +515,30 @@ export async function readFile(path: string): Promise<string> {
   return file.text();
 }
 
+/**
+ * Read a vault file and return a browser-displayable object URL (blob URL).
+ * Used by the rich editor to render images stored in the vault.
+ */
+const objectURLCache = new Map<string, { url: string; mtime: number }>();
+
+export async function readFileAsObjectURL(path: string): Promise<string> {
+  try {
+    const handle = await getFileHandle(path);
+    const file = await handle.getFile();
+    const cached = objectURLCache.get(path);
+    if (cached && cached.mtime === file.lastModified) {
+      return cached.url;
+    }
+    // Revoke old blob URL to avoid memory leaks
+    if (cached) URL.revokeObjectURL(cached.url);
+    const url = URL.createObjectURL(file);
+    objectURLCache.set(path, { url, mtime: file.lastModified });
+    return url;
+  } catch {
+    return path; // Fallback to raw path (e.g. external URLs)
+  }
+}
+
 export async function writeFile(path: string, content: string): Promise<void> {
   const handle = await getFileHandle(path, true);
   const writable = await handle.createWritable();

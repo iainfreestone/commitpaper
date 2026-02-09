@@ -560,6 +560,17 @@ textarea:focus {
   color: var(--text-primary);
 }
 
+/* Full-width editor mode */
+html[data-editor-width="full"] .ProseMirror {
+  max-width: none !important;
+  width: 100% !important;
+}
+
+html[data-editor-width="full"] .raw-editor-textarea {
+  max-width: none !important;
+  width: 100% !important;
+}
+
 /* ============================================================
    Note Picker Styles
    ============================================================ */
@@ -2245,4 +2256,114 @@ textarea:focus {
 }
 .theme-swatch[data-theme-preview="crepe-light"] {
   background: #805610;
+}
+
+/* ============================================================
+   Settings Menu
+   ============================================================ */
+
+.settings-menu {
+  position: relative;
+}
+
+.settings-toggle-btn {
+  background: none;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 1px 8px;
+  font-size: 11px;
+  font-family: var(--font-mono);
+  transition:
+    color 0.15s,
+    border-color 0.15s;
+  white-space: nowrap;
+}
+
+.settings-toggle-btn:hover {
+  color: var(--text-primary);
+  border-color: var(--accent);
+}
+
+.settings-dropdown {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  right: 0;
+  min-width: 240px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  padding: 4px 0;
+  z-index: 1000;
+  font-size: 13px;
+}
+
+.settings-dropdown-header {
+  padding: 8px 12px 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.settings-section {
+  padding: 4px 0;
+}
+
+.settings-section-label {
+  padding: 6px 12px 2px;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.settings-option-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.settings-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 6px 12px;
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.1s;
+}
+
+.settings-option:hover {
+  background: var(--bg-hover);
+}
+
+.settings-option.active {
+  color: var(--accent);
+}
+
+.settings-option-label {
+  font-weight: 500;
+  min-width: 80px;
+}
+
+.settings-option-desc {
+  flex: 1;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.settings-check {
+  color: var(--accent);
+  font-size: 14px;
+  margin-left: auto;
 }

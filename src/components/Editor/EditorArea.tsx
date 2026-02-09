@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useRef, useEffect } from "react";
 import { useEditorStore } from "../../stores/editorStore";
 import { Editor } from "./Editor";
 import { RawEditor } from "./RawEditor";
@@ -10,8 +10,14 @@ export function EditorArea() {
   const closeTab = useEditorStore((s) => s.closeTab);
   const setActiveTab = useEditorStore((s) => s.setActiveTab);
   const editorMode = useEditorStore((s) => s.editorMode);
+  const editorWidth = useEditorStore((s) => s.editorWidth);
   const editorRef = useRef<EditorHandle>(null);
 
+  // Sync editor width to <html> element so CSS can target it globally
+  useEffect(() => {
+    document.documentElement.setAttribute("data-editor-width", editorWidth);
+  }, [editorWidth]);
+  
   return (
     <div className="editor-area">
       {openTabs.length > 0 && (

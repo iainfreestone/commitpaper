@@ -4,6 +4,7 @@ import { useEditorStore } from "../stores/editorStore";
 import { useGitStore } from "../stores/gitStore";
 import { setRootHandle } from "../lib/api";
 import { ThemeSelector } from "./ThemeSelector";
+import { SettingsMenu } from "./SettingsMenu";
 
 export function StatusBar() {
   const vault = useVaultStore((s) => s.vault);
@@ -118,6 +119,7 @@ export function StatusBar() {
           </div>
         )}
         <ThemeSelector />
+        <SettingsMenu />
         <div className="status-bar-item">CommitPaper</div>
       </div>
     </div>

@@ -2,6 +2,7 @@ import { create } from "zustand";
 import * as api from "../lib/api";
 
 export type EditorMode = "rich" | "raw";
+export type EditorWidth = "readable" | "full";
 
 interface EditorStore {
   openTabs: TabInfo[];
@@ -10,6 +11,7 @@ interface EditorStore {
   isDirty: boolean;
   wordCount: number;
   editorMode: EditorMode;
+  editorWidth: EditorWidth;
 
   openFile: (path: string) => Promise<void>;
   closeTab: (path: string, force?: boolean) => void;
@@ -20,6 +22,7 @@ interface EditorStore {
   saveFile: () => Promise<void>;
   renameActiveTab: (oldPath: string, newPath: string) => void;
   toggleEditorMode: () => void;
+  setEditorWidth: (width: EditorWidth) => void;
 }
 
 export interface TabInfo {
@@ -146,6 +149,7 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
   isDirty: false,
   wordCount: 0,
   editorMode: "rich" as EditorMode,
+  editorWidth: (localStorage.getItem("commitpaper-editor-width") as EditorWidth) || "readable",
 
   openFile: async (path: string) => {
     try {
@@ -371,5 +375,10 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
       // Switching back to rich — content in store is already up-to-date
       set({ editorMode: "rich" });
     }
+  },
+
+  setEditorWidth: (width: EditorWidth) => {
+    localStorage.setItem("commitpaper-editor-width", width);
+    set({ editorWidth: width });
   },
 }));

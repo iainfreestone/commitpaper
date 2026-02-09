@@ -18,7 +18,7 @@ import {
   useEditorStore,
   registerEditorContentProvider,
 } from "../../stores/editorStore";
-import { saveBinaryFile, writeFile, reindexFile } from "../../lib/api";
+import { saveBinaryFile, writeFile, reindexFile, readFileAsObjectURL } from "../../lib/api";
 import { NotePicker } from "./NotePicker";
 
 // Custom ProseMirror plugins
@@ -190,6 +190,12 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor(
               console.error("Failed to upload image:", err);
               return "";
             }
+          },
+          proxyDomURL: (url: string) => {
+            // External URLs (http/https/data/blob) don't need proxying
+            if (/^(https?|data|blob):/i.test(url)) return url;
+            // Resolve vault-relative paths to blob URLs for rendering
+            return readFileAsObjectURL(url);
           },
         },
       },
