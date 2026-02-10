@@ -6,6 +6,7 @@ import {
   saveSettings,
   clearLegacyLocalStorage,
 } from "../lib/settings";
+import { useEditorStore } from "./editorStore";
 
 interface VaultStore {
   vault: VaultConfig | null;
@@ -43,6 +44,9 @@ export const useVaultStore = create<VaultStore>((set, get) => ({
       window.dispatchEvent(
         new CustomEvent("vault-settings-loaded", { detail: settings }),
       );
+
+      // Restore previously open tabs
+      await useEditorStore.getState().restoreTabs(settings);
     } catch (e) {
       set({ error: String(e), isLoading: false });
     }

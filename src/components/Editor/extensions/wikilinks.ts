@@ -68,6 +68,9 @@ export const wikilinkPlugin = ViewPlugin.fromClass(
     decorations: (v) => v.decorations,
     eventHandlers: {
       click: (e, view) => {
+        // Require Ctrl (or Cmd on Mac) to follow wikilinks
+        if (!e.ctrlKey && !e.metaKey) return false;
+
         const pos = view.posAtCoords({ x: e.clientX, y: e.clientY });
         if (pos === null) return false;
 

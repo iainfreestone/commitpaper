@@ -15,6 +15,10 @@ export interface VaultSettings {
   lineNumbers: boolean;
   starred: string[];
   gitAuthor: { name: string; email: string };
+  /** Paths of tabs that were open when the vault was last used */
+  openTabs: string[];
+  /** Path of the tab that was active when the vault was last used */
+  activeTab: string | null;
 }
 
 const DEFAULTS: VaultSettings = {
@@ -24,6 +28,8 @@ const DEFAULTS: VaultSettings = {
   lineNumbers: false,
   starred: [],
   gitAuthor: { name: "CommitPaper User", email: "user@commitpaper.local" },
+  openTabs: [],
+  activeTab: null,
 };
 
 /** Currently loaded settings (in memory) */

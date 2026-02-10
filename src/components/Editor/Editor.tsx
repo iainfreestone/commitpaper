@@ -18,12 +18,7 @@ import {
   useEditorStore,
   registerEditorContentProvider,
 } from "../../stores/editorStore";
-import {
-  saveBinaryFile,
-  writeFile,
-  reindexFile,
-  readFileAsObjectURL,
-} from "../../lib/api";
+import { saveBinaryFile, readFileAsObjectURL } from "../../lib/api";
 import { NotePicker } from "./NotePicker";
 
 // Custom ProseMirror plugins
@@ -141,7 +136,7 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor(
       features: {
         [Crepe.Feature.CodeMirror]: true,
         [Crepe.Feature.ListItem]: true,
-        [Crepe.Feature.LinkTooltip]: true,
+        [Crepe.Feature.LinkTooltip]: false,
         [Crepe.Feature.ImageBlock]: true,
         [Crepe.Feature.BlockEdit]: true,
         [Crepe.Feature.Placeholder]: true,
@@ -333,30 +328,34 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor(
         syncTimer = null;
       }
 
-      // Flush final content to store and save before destroying.
-      // openFile/setActiveTab already await saveFile() before switching,
-      // so this is a safety net for edge cases (browser close, force unmount).
+      // Capture final content from the live editor BEFORE destroying it.
+      // We snapshot it into the store so that saveFile() (which falls back
+      // to store content when no editor provider is registered) will use
+      // the correct text.
+      let needsSave = false;
       if (crepeRef.current) {
         try {
           const finalMarkdown = crepeRef.current.getMarkdown();
           const state = useEditorStore.getState();
           if (state.activeTabPath === filePath) {
-            // Update store directly (bypass debounce/auto-save timers)
             useEditorStore.setState({ content: finalMarkdown });
-            // Fire-and-forget save to disk
-            if (state.isDirty) {
-              writeFile(filePath, finalMarkdown)
-                .then(() => reindexFile(filePath))
-                .catch(console.error);
-            }
+            needsSave = state.isDirty;
           }
         } catch {
           // Editor might already be in a bad state
         }
       }
 
-      // Unregister content provider
+      // Unregister content provider BEFORE triggering save so
+      // getFreshContent() falls back to the store snapshot above.
       registerEditorContentProvider(null);
+
+      // Fire-and-forget save through the serialized write chain.
+      // openFile/setActiveTab usually save before switching, so this
+      // is a safety net for edge cases (browser close, force unmount).
+      if (needsSave) {
+        useEditorStore.getState().saveFile().catch(console.error);
+      }
 
       containerEl?.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("editor-set-content", handleSetContent);

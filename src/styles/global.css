@@ -567,6 +567,49 @@ textarea:focus {
   font-size: var(--editor-font-size, 15px) !important;
 }
 
+/* ── Link Ctrl+Click behaviour ──────────────────────────────── */
+
+/* Default: links look like text cursor (for editing) */
+.milkdown-editor-wrapper .ProseMirror a[href] {
+  cursor: text;
+}
+
+/* When Ctrl/Cmd is held, links show pointer cursor */
+.milkdown-editor-wrapper .ProseMirror.link-ctrl-held a[href] {
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+/* Hover tooltip that shows the link target */
+.link-hover-tooltip {
+  display: none;
+  position: fixed;
+  z-index: 10000;
+  padding: 4px 10px;
+  background: var(--bg-secondary, #1e1e2e);
+  border: 1px solid var(--border-color, #313244);
+  border-radius: 6px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+  font-family: var(--font-mono, monospace);
+  font-size: 12px;
+  line-height: 1.5;
+  max-width: 420px;
+  pointer-events: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.link-hover-href {
+  color: var(--accent, #89b4fa);
+  margin-right: 8px;
+}
+
+.link-hover-hint {
+  color: var(--text-muted, #6c7086);
+  font-size: 11px;
+}
+
 /* Full-width editor mode */
 html[data-editor-width="full"] .ProseMirror {
   max-width: none !important;

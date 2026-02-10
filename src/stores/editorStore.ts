@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import * as api from "../lib/api";
 import { getSettings, updateSettings } from "../lib/settings";
+import type { VaultSettings } from "../lib/settings";
 
 export type EditorMode = "rich" | "raw";
 export type EditorWidth = "readable" | "full";
@@ -24,6 +25,7 @@ interface EditorStore {
   setWordCount: (count: number) => void;
   saveFile: () => Promise<void>;
   renameActiveTab: (oldPath: string, newPath: string) => void;
+  restoreTabs: (settings: VaultSettings) => Promise<void>;
   toggleEditorMode: () => void;
   setEditorWidth: (width: EditorWidth) => void;
   setFontSize: (size: number) => void;
@@ -39,9 +41,37 @@ export interface TabInfo {
 
 let autoSaveTimer: ReturnType<typeof setTimeout> | null = null;
 let titleRenameTimer: ReturnType<typeof setTimeout> | null = null;
-const AUTO_SAVE_DELAY = 2000;
-const TITLE_RENAME_DELAY = 800;
+let persistTabsTimer: ReturnType<typeof setTimeout> | null = null;
+const AUTO_SAVE_DELAY = 3000;
+const TITLE_RENAME_DELAY = 5000;
 let nextTabId = 1;
+
+/**
+ * Debounced persist of current tab state to .commitpaper/settings.json.
+ * Avoids hammering the file system on rapid tab operations.
+ */
+function persistTabs() {
+  if (persistTabsTimer) clearTimeout(persistTabsTimer);
+  persistTabsTimer = setTimeout(() => {
+    const { openTabs, activeTabPath } = useEditorStore.getState();
+    updateSettings({
+      openTabs: openTabs.map((t) => t.path),
+      activeTab: activeTabPath,
+    });
+  }, 500);
+}
+
+// ─── Write serialization ───────────────────────────────────────
+// All file writes (save, rename) must go through this chain to prevent
+// concurrent File System Access API writes from clobbering each other.
+let writeChain: Promise<void> = Promise.resolve();
+
+/**
+ * Content snapshot from the last successful save.
+ * Used to skip redundant writes and to detect whether the user
+ * has edited since the last save completed.
+ */
+let lastSavedContent: string = "";
 
 // ─── Live editor content provider ──────────────────────────────
 // The live Crepe/ProseMirror editor is the source of truth for content.
@@ -106,33 +136,45 @@ async function handleTitleRename(
   );
   if (sanitized.toLowerCase() === currentName.toLowerCase()) return;
 
-  const dir = currentPath.includes("/")
-    ? currentPath.substring(0, currentPath.lastIndexOf("/") + 1)
-    : "";
-  let newPath = `${dir}${sanitized}.md`;
+  // Serialized through the write chain so renames never overlap with saves
+  await enqueueWrite(async () => {
+    if (isRenaming) return;
 
-  if (await api.fileExists(newPath)) {
-    let i = 1;
-    while (await api.fileExists(`${dir}${sanitized} ${i}.md`)) {
-      i++;
+    // Re-verify we're still on the same file (may have changed while queued)
+    const state = useEditorStore.getState();
+    if (state.activeTabPath !== currentPath) return;
+
+    const dir = currentPath.includes("/")
+      ? currentPath.substring(0, currentPath.lastIndexOf("/") + 1)
+      : "";
+    let newPath = `${dir}${sanitized}.md`;
+
+    if (await api.fileExists(newPath)) {
+      let i = 1;
+      while (await api.fileExists(`${dir}${sanitized} ${i}.md`)) {
+        i++;
+      }
+      newPath = `${dir}${sanitized} ${i}.md`;
     }
-    newPath = `${dir}${sanitized} ${i}.md`;
-  }
 
-  try {
-    isRenaming = true;
-    // Use fresh content from the live editor, not the potentially stale store
-    const content = getFreshContent();
-    await api.writeFile(currentPath, content);
-    await api.renameFile(currentPath, newPath);
-    store.renameActiveTab(currentPath, newPath);
-    const vaultStore = (await import("./vaultStore")).useVaultStore.getState();
-    vaultStore.refreshFileTree();
-  } catch (e) {
-    console.error("Failed to rename file from title:", e);
-  } finally {
-    isRenaming = false;
-  }
+    try {
+      isRenaming = true;
+      // Use fresh content from the live editor
+      const content = getFreshContent();
+      await api.writeFile(currentPath, content);
+      lastSavedContent = content;
+      await api.renameFile(currentPath, newPath);
+      store.renameActiveTab(currentPath, newPath);
+      const vaultStore = (
+        await import("./vaultStore")
+      ).useVaultStore.getState();
+      vaultStore.refreshFileTree();
+    } catch (e) {
+      console.error("Failed to rename file from title:", e);
+    } finally {
+      isRenaming = false;
+    }
+  });
 }
 
 /** Clear all pending timers (auto-save, title rename) */
@@ -145,6 +187,18 @@ function clearPendingTimers() {
     clearTimeout(titleRenameTimer);
     titleRenameTimer = null;
   }
+}
+
+/**
+ * Enqueue a write operation on the serialized write chain.
+ * Guarantees that only one file-system write runs at a time.
+ */
+function enqueueWrite(fn: () => Promise<void>): Promise<void> {
+  const link = writeChain.then(fn).catch((e) => {
+    console.error("Serialized write failed:", e);
+  });
+  writeChain = link;
+  return link;
 }
 
 export const useEditorStore = create<EditorStore>((set, get) => ({
@@ -173,6 +227,7 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
       clearPendingTimers();
 
       const content = await api.readFile(path);
+      lastSavedContent = content; // Track what's on disk for dedup
       const name = path.split("/").pop() || path;
 
       const { openTabs } = get();
@@ -191,6 +246,7 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
       } else {
         set({ activeTabPath: path, content, isDirty: false });
       }
+      persistTabs();
     } catch (e) {
       console.error("Failed to open file:", e);
     }
@@ -225,6 +281,7 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
             content,
             isDirty: false,
           });
+          persistTabs();
         });
       } else {
         set({
@@ -233,10 +290,12 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
           content: "",
           isDirty: false,
         });
+        persistTabs();
       }
     } else {
       // Closing a background tab — don't touch the active tab's content
       set({ openTabs: newTabs });
+      persistTabs();
     }
   },
 
@@ -254,6 +313,7 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
       isDirty: false,
       wordCount: 0,
     });
+    persistTabs();
   },
 
   setActiveTab: async (path: string) => {
@@ -271,10 +331,13 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
 
     try {
       const content = await api.readFile(path);
+      lastSavedContent = content; // Track what's on disk for dedup
       set({ activeTabPath: path, content, isDirty: false });
+      persistTabs();
     } catch (e) {
       console.error("Failed to switch tab:", e);
       set({ activeTabPath: path });
+      persistTabs();
     }
   },
 
@@ -319,7 +382,9 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
       // Only rename if we're still on the same file
       if (!state.activeTabPath || state.activeTabPath !== pathAtCallTime)
         return;
-      const h1 = extractH1Title(state.content);
+      // Use fresh content for H1 extraction instead of potentially stale store
+      const freshContent = getFreshContent();
+      const h1 = extractH1Title(freshContent);
       if (h1) {
         handleTitleRename(h1, state.activeTabPath, state);
       }
@@ -334,31 +399,52 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
     const { activeTabPath } = get();
     if (!activeTabPath) return;
 
-    // Always get the freshest content from the live editor
-    const content = getFreshContent();
+    // Capture content and path NOW, before entering the serialized write
+    // queue. This ensures we save the correct snapshot even if the user
+    // switches tabs before the queued write executes.
+    const contentToSave = getFreshContent();
+    const pathToSave = activeTabPath;
 
-    // Sync store so consumers see the latest
-    set({ content });
-
-    try {
-      await api.writeFile(activeTabPath, content);
-      await api.reindexFile(activeTabPath);
-
-      // Only clear dirty flag if content hasn't changed during the save
-      const currentContent = getFreshContent();
-      if (currentContent === content) {
-        set({
-          isDirty: false,
-          openTabs: get().openTabs.map((t) =>
-            t.path === activeTabPath ? { ...t, isDirty: false } : t,
-          ),
-        });
+    await enqueueWrite(async () => {
+      // Skip if content is identical to what's already on disk
+      if (contentToSave === lastSavedContent) {
+        const s = get();
+        if (s.activeTabPath === pathToSave) {
+          set({
+            isDirty: false,
+            openTabs: s.openTabs.map((t) =>
+              t.path === pathToSave ? { ...t, isDirty: false } : t,
+            ),
+          });
+        }
+        return;
       }
-      // If content changed during save, isDirty stays true and auto-save
-      // will fire again naturally
-    } catch (e) {
-      console.error("Failed to save file:", e);
-    }
+
+      try {
+        await api.writeFile(pathToSave, contentToSave);
+        await api.reindexFile(pathToSave);
+        lastSavedContent = contentToSave;
+
+        // Only clear dirty flag if we're still on the same file
+        // AND content hasn't changed since we captured it
+        const s = get();
+        if (s.activeTabPath === pathToSave) {
+          const currentContent = getFreshContent();
+          if (currentContent === contentToSave) {
+            set({
+              isDirty: false,
+              openTabs: s.openTabs.map((t) =>
+                t.path === pathToSave ? { ...t, isDirty: false } : t,
+              ),
+            });
+          }
+          // else: user typed during save, isDirty stays true,
+          // auto-save will fire again naturally
+        }
+      } catch (e) {
+        console.error("Failed to save file:", e);
+      }
+    });
   },
 
   renameActiveTab: (oldPath: string, newPath: string) => {
@@ -370,6 +456,53 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
         t.path === oldPath ? { ...t, path: newPath, name: newName } : t,
       ),
     }));
+    persistTabs();
+  },
+
+  restoreTabs: async (settings: VaultSettings) => {
+    const paths = settings.openTabs ?? [];
+    if (paths.length === 0) return;
+
+    // Verify which files still exist and build tab entries
+    const tabs: TabInfo[] = [];
+    for (const p of paths) {
+      try {
+        await api.readFile(p); // will throw if file was deleted
+        tabs.push({
+          id: nextTabId++,
+          path: p,
+          name: p.split("/").pop() || p,
+          isDirty: false,
+        });
+      } catch {
+        // File no longer exists — skip it
+      }
+    }
+
+    if (tabs.length === 0) return;
+
+    // Pick the active tab: prefer the saved one if it's still open
+    const activeTab =
+      (settings.activeTab && tabs.find((t) => t.path === settings.activeTab)
+        ? settings.activeTab
+        : tabs[tabs.length - 1]?.path) ?? null;
+
+    let content = "";
+    if (activeTab) {
+      try {
+        content = await api.readFile(activeTab);
+        lastSavedContent = content;
+      } catch {
+        // Shouldn't happen since we verified above
+      }
+    }
+
+    set({
+      openTabs: tabs,
+      activeTabPath: activeTab,
+      content,
+      isDirty: false,
+    });
   },
 
   toggleEditorMode: () => {

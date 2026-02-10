@@ -71,6 +71,9 @@ export default function App() {
   }, [vault]);
 
   // Handle internal note link clicks (standard markdown links to .md files)
+  // Requires Ctrl/Cmd+click in the editor to avoid accidental navigation
+  // while editing. Links in other UI elements (panels, tooltips) follow on
+  // plain click.
   useEffect(() => {
     const handleLinkClick = async (e: MouseEvent) => {
       const anchor = (e.target as HTMLElement).closest("a[href]");
@@ -82,6 +85,12 @@ export default function App() {
       if (href.startsWith("http://") || href.startsWith("https://")) return;
       // Skip pure anchors
       if (href.startsWith("#")) return;
+
+      // If the click originated inside the editor, require Ctrl/Cmd
+      const inEditor = !!(e.target as HTMLElement).closest(
+        ".milkdown-editor-wrapper, .raw-editor-container",
+      );
+      if (inEditor && !e.ctrlKey && !e.metaKey) return;
 
       // This is an internal note link — prevent default navigation
       e.preventDefault();
