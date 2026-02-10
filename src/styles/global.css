@@ -551,6 +551,7 @@ textarea:focus {
 
 .milkdown-editor-wrapper .ProseMirror {
   max-width: 780px;
+  width: 100%;
   margin: 0 auto;
   padding: 16px 40px;
   min-height: 100%;
