@@ -1,6 +1,23 @@
 import { Link } from "react-router-dom";
+import { useEffect } from "react";
 
 export default function LandingPage() {
+  // Set SEO meta tags for the landing page
+  useEffect(() => {
+    document.title =
+      "CommitPaper — Free Markdown Note-Taking App | Local-First, No Cloud";
+    const meta = document.querySelector('meta[name="description"]');
+    if (meta) {
+      meta.setAttribute(
+        "content",
+        "A free note-taking app that works with any folder on your computer. Write in Markdown, link your thinking, visualise your knowledge graph, and sync with Dropbox, Google Drive, or Git. No cloud accounts, no subscriptions — runs entirely in your browser.",
+      );
+    }
+    return () => {
+      document.title = "CommitPaper";
+    };
+  }, []);
+
   return (
     <div className="landing-page">
       {/* Navigation */}
@@ -11,7 +28,7 @@ export default function LandingPage() {
           <a href="#how-it-works">How It Works</a>
           <a href="#faq">FAQ</a>
           <Link to="/app" className="nav-cta">
-            Open App
+            Try It Now
           </Link>
         </div>
       </nav>
@@ -19,540 +36,258 @@ export default function LandingPage() {
       {/* Hero */}
       <section className="landing-hero">
         <h1>
-          Your notes. Your folder.
+          Note-taking that
           <br />
-          <span className="accent">Your rules.</span>
+          <span className="accent">respects your files.</span>
         </h1>
         <p className="tagline">
-          A free, open-source note-taking app that works with any folder on your
-          computer. No cloud accounts, no subscriptions, no proprietary formats.
-          Just Markdown files — add Git for sync and version history.
+          A free Markdown editor that works with any folder on your computer. No
+          sign-up. No cloud lock-in. Just open a folder and start writing.
         </p>
         <div className="landing-hero-actions">
           <Link to="/app" className="hero-btn-primary">
-            Open in Browser
+            Open CommitPaper — It's Free
           </Link>
-          <a
-            href="https://github.com/IainMcl/commitpaper"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hero-btn-secondary"
-          >
-            View on GitHub
-          </a>
         </div>
         <div className="hero-badges">
-          <span>&#x1F4DD; Plain Markdown</span>
-          <span>&#x1F4C2; Any Folder</span>
-          <span>&#x2601;&#xFE0F; Dropbox / Drive / OneDrive</span>
-          <span>&#x1F500; Git Ready</span>
-          <span>&#x1F512; Local First</span>
-          <span>&#x26A1; Fast &amp; Light</span>
+          <span>&#x2705; No sign-up required</span>
+          <span>&#x1F4C2; Works with any folder</span>
+          <span>&#x2601;&#xFE0F; Syncs via Dropbox / Drive / OneDrive</span>
+          <span>&#x1F512; 100% local &amp; private</span>
         </div>
-        <div className="browser-support-note">
-          &#x26A0;&#xFE0F; Web version requires Chrome or Edge (File System
-          Access API)
-        </div>
+        <p className="hero-social-proof">
+          Free forever &middot; Works offline as a PWA
+        </p>
       </section>
 
-      {/* Why CommitPaper */}
-      <section className="landing-section">
-        <h2>Why CommitPaper?</h2>
+      {/* How it works — simple 3-step */}
+      <section className="landing-section" id="how-it-works">
+        <h2>Start writing in 30 seconds</h2>
         <p className="section-subtitle">
-          Most note-taking apps lock you into their ecosystem. Your notes live
-          on someone else's server, in someone else's format, behind someone
-          else's paywall. CommitPaper takes a different approach.
+          No installation, no account creation, no configuration. Just open a
+          folder.
         </p>
-        <div className="value-grid">
-          <div className="value-item">
-            <div className="value-item-icon">&#x1F4C4;</div>
-            <h4>Plain Markdown</h4>
-            <p>Open your notes in any editor, on any device, forever.</p>
-          </div>
-          <div className="value-item">
-            <div className="value-item-icon">&#x1F4C2;</div>
-            <h4>Any Folder</h4>
+        <div className="steps-grid">
+          <div className="step-card">
+            <div className="step-number">1</div>
+            <h3>Open a folder</h3>
             <p>
-              Pick any folder on your computer. No special setup or Git
-              required.
+              Click "Open Folder" and pick any folder on your computer. That's
+              your notebook.
             </p>
           </div>
-          <div className="value-item">
-            <div className="value-item-icon">&#x1F500;</div>
-            <h4>Sync Your Way</h4>
+          <div className="step-card">
+            <div className="step-number">2</div>
+            <h3>Start writing</h3>
             <p>
-              Use Git for version history, or just put your vault in Dropbox,
-              Google Drive, or OneDrive — it syncs automatically across
-              computers.
+              Create notes in Markdown. Everything auto-saves and stays on your
+              machine.
             </p>
           </div>
-          <div className="value-item">
-            <div className="value-item-icon">&#x1F4BB;</div>
-            <h4>Local First</h4>
+          <div className="step-card">
+            <div className="step-number">3</div>
+            <h3>Sync your way</h3>
             <p>
-              Everything runs on your machine. No internet required to write.
+              Put your folder in Dropbox, Google Drive, or OneDrive. Or add Git
+              for version history.
             </p>
           </div>
         </div>
-      </section>
-
-      {/* Layout overview */}
-      <section className="landing-section">
-        <h2>What It Looks Like</h2>
-        <p className="section-subtitle">
-          A clean, dark interface built around three panels — sidebar for
-          navigation, editor for writing, and a right panel for context.
-        </p>
-        <table className="tech-stack-table">
-          <thead>
-            <tr>
-              <th>Panel</th>
-              <th>What it does</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>
-                <strong>Sidebar</strong> (left)
-              </td>
-              <td>Browse files, search notes, manage Git</td>
-            </tr>
-            <tr>
-              <td>
-                <strong>Editor</strong> (centre)
-              </td>
-              <td>
-                Write in Markdown with live inline rendering — or toggle to raw
-                mode with Ctrl+E
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <strong>Right panel</strong>
-              </td>
-              <td>
-                See your outline, backlinks, properties, file history, and
-                knowledge graph
-              </td>
-            </tr>
-          </tbody>
-        </table>
+        <div className="section-cta">
+          <Link to="/app" className="hero-btn-primary">
+            Try It Now
+          </Link>
+        </div>
       </section>
 
       {/* Features */}
       <section className="landing-section" id="features">
-        <h2>Features</h2>
+        <h2>Everything you need, nothing you don't</h2>
         <p className="section-subtitle">
-          Everything you need for a powerful note-taking workflow, built in from
-          day one.
+          A focused writing experience with powerful tools built in — no plugins
+          to install, no extensions to manage.
         </p>
         <div className="feature-grid">
           <div className="feature-card">
             <div className="feature-card-icon">&#x270D;&#xFE0F;</div>
-            <h3>Write Naturally</h3>
+            <h3>Live WYSIWYG Editor</h3>
             <p>
-              The Milkdown/Crepe editor renders Markdown as you type. Headings
-              appear at their actual size, bold appears bold, and code blocks
-              get syntax-coloured backgrounds. Press Ctrl+E to toggle between
-              rich WYSIWYG and raw text mode.
+              Headings, bold, images, code blocks — all rendered as you type.
+              Switch to raw Markdown mode anytime with Ctrl+E.
             </p>
           </div>
           <div className="feature-card">
             <div className="feature-card-icon">&#x1F517;</div>
             <h3>Link Your Thinking</h3>
             <p>
-              Connect ideas with standard markdown links via the built-in note
-              picker. Click any link to navigate. The Backlinks panel traces
-              connections in both directions.
+              Connect notes with links. See every connection in the Backlinks
+              panel. Build a personal wiki effortlessly.
             </p>
           </div>
           <div className="feature-card">
             <div className="feature-card-icon">&#x1F578;&#xFE0F;</div>
-            <h3>Visualise Your Knowledge</h3>
+            <h3>Knowledge Graph</h3>
             <p>
-              The Graph View renders your entire vault as an interactive
-              network. Each note is a node, each link is an edge. Click to open,
-              drag to rearrange, scroll to zoom.
+              Visualise all your notes as an interactive network. See the shape
+              of your thinking at a glance.
             </p>
           </div>
           <div className="feature-card">
             <div className="feature-card-icon">&#x1F500;</div>
             <h3>Full Git Integration</h3>
             <p>
-              Stage, commit, push, branch, and view history — all from within
-              the app, powered by isomorphic-git. See your branch, modified
-              files, diffs, and full commit log. Git is optional — everything
-              else works without it.
-            </p>
-          </div>
-          <div className="feature-card">
-            <div className="feature-card-icon">&#x1F3A8;</div>
-            <h3>8 Themes</h3>
-            <p>
-              Choose from 8 built-in themes — 4 dark and 4 light, including
-              Catppuccin, Nord, Frame, and Crepe. Switch instantly from the
-              status bar.
-            </p>
-          </div>
-          <div className="feature-card">
-            <div className="feature-card-icon">&#x1F4CB;</div>
-            <h3>Properties Editor</h3>
-            <p>
-              Visual key-value editor for YAML frontmatter. Add, edit, and
-              remove metadata without touching raw YAML.
+              Stage, commit, push, and branch — all from within the app. See
+              diffs, history, and commit logs. Git is optional.
             </p>
           </div>
           <div className="feature-card">
             <div className="feature-card-icon">&#x2728;</div>
             <h3>Rich Content</h3>
             <p>
-              Callouts, LaTeX math (KaTeX), Mermaid diagrams, interactive
-              checkboxes, tables with alignment, and clipboard image paste — all
-              rendered live.
+              Callouts, LaTeX math, Mermaid diagrams, interactive checkboxes,
+              tables, and clipboard image paste — all rendered live.
             </p>
           </div>
           <div className="feature-card">
             <div className="feature-card-icon">&#x1F50D;</div>
-            <h3>Search Everything</h3>
+            <h3>Instant Search</h3>
             <p>
-              Command palette (Ctrl+P) for fuzzy file search. Full-text search
-              across every note with ranked results and highlighted snippets.
+              Command palette for fuzzy file search. Full-text search across
+              every note with ranked results and highlighted snippets.
+            </p>
+          </div>
+          <div className="feature-card">
+            <div className="feature-card-icon">&#x1F3A8;</div>
+            <h3>8 Themes</h3>
+            <p>
+              4 dark and 4 light themes including Catppuccin, Nord, Frame, and
+              Crepe. Switch instantly from the status bar.
+            </p>
+          </div>
+          <div className="feature-card">
+            <div className="feature-card-icon">&#x2601;&#xFE0F;</div>
+            <h3>Cross-Device Sync</h3>
+            <p>
+              Your notes are just a folder. Put it in Dropbox, Google Drive, or
+              OneDrive and it syncs automatically across all your computers.
             </p>
           </div>
         </div>
       </section>
 
-      {/* Keyboard shortcuts */}
+      {/* Comparison / differentiator */}
       <section className="landing-section">
-        <h2>Keyboard Shortcuts</h2>
-        <table className="shortcuts-table">
-          <thead>
-            <tr>
-              <th>Shortcut</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>
-                <kbd>Ctrl+S</kbd>
-              </td>
-              <td>Save</td>
-            </tr>
-            <tr>
-              <td>
-                <kbd>Ctrl+P</kbd>
-              </td>
-              <td>Command palette</td>
-            </tr>
-            <tr>
-              <td>
-                <kbd>Ctrl+\</kbd>
-              </td>
-              <td>Toggle right panel</td>
-            </tr>
-            <tr>
-              <td>
-                <kbd>Ctrl+E</kbd>
-              </td>
-              <td>Toggle Rich/Raw</td>
-            </tr>
-            <tr>
-              <td>
-                <kbd>Ctrl+B</kbd>
-              </td>
-              <td>Bold</td>
-            </tr>
-            <tr>
-              <td>
-                <kbd>Ctrl+I</kbd>
-              </td>
-              <td>Italic</td>
-            </tr>
-            <tr>
-              <td>
-                <kbd>Ctrl+K</kbd>
-              </td>
-              <td>Insert link</td>
-            </tr>
-            <tr>
-              <td>
-                <kbd>Ctrl+1–4</kbd>
-              </td>
-              <td>Heading level 1–4</td>
-            </tr>
-            <tr>
-              <td>
-                <kbd>Ctrl+Shift+8</kbd>
-              </td>
-              <td>Bullet list</td>
-            </tr>
-            <tr>
-              <td>
-                <kbd>Ctrl+Shift+7</kbd>
-              </td>
-              <td>Numbered list</td>
-            </tr>
-            <tr>
-              <td>
-                <kbd>Ctrl+F</kbd>
-              </td>
-              <td>Find in file</td>
-            </tr>
-            <tr>
-              <td>
-                <kbd>Ctrl+H</kbd>
-              </td>
-              <td>Find and replace</td>
-            </tr>
-            <tr>
-              <td>
-                <kbd>Ctrl+Z</kbd>
-              </td>
-              <td>Undo</td>
-            </tr>
-            <tr>
-              <td>
-                <kbd>Ctrl+Shift+Z</kbd>
-              </td>
-              <td>Redo</td>
-            </tr>
-          </tbody>
-        </table>
+        <h2>Why people switch to CommitPaper</h2>
+        <div className="comparison-grid">
+          <div className="comparison-item">
+            <div className="comparison-before">Other apps</div>
+            <div className="comparison-problem">
+              Notes locked in proprietary formats
+            </div>
+            <div className="comparison-after">CommitPaper</div>
+            <div className="comparison-solution">
+              Plain Markdown files you own forever
+            </div>
+          </div>
+          <div className="comparison-item">
+            <div className="comparison-before">Other apps</div>
+            <div className="comparison-problem">
+              Monthly subscriptions for sync
+            </div>
+            <div className="comparison-after">CommitPaper</div>
+            <div className="comparison-solution">
+              Free sync via Dropbox, Drive, or Git
+            </div>
+          </div>
+          <div className="comparison-item">
+            <div className="comparison-before">Other apps</div>
+            <div className="comparison-problem">
+              Data stored on someone else's servers
+            </div>
+            <div className="comparison-after">CommitPaper</div>
+            <div className="comparison-solution">
+              100% local — nothing leaves your machine
+            </div>
+          </div>
+        </div>
       </section>
 
-      {/* How it works */}
-      <section className="landing-section" id="how-it-works">
-        <h2>How It Works</h2>
-        <p className="section-subtitle">
-          The web version runs entirely in your browser using the File System
-          Access API. Pick a folder, and CommitPaper reads and writes your
-          Markdown files directly — no server, no uploads, nothing leaves your
-          machine.
+      {/* Second CTA */}
+      <section className="landing-cta-section">
+        <h2>Your notes deserve better</h2>
+        <p>
+          Stop paying for cloud storage you don't need. Stop worrying about
+          vendor lock-in. Start writing in a folder you own.
         </p>
-        <div className="feature-grid">
-          <div className="feature-card">
-            <div className="feature-card-icon">&#x1F4C2;</div>
-            <h3>1. Open a Folder</h3>
-            <p>
-              Click "Open Vault" and select any folder. Your browser asks for
-              permission once per session.
-            </p>
-          </div>
-          <div className="feature-card">
-            <div className="feature-card-icon">&#x270F;&#xFE0F;</div>
-            <h3>2. Start Writing</h3>
-            <p>
-              Create notes, link ideas, and organise with folders. Auto-save
-              keeps your work safe — changes are written directly to disk.
-            </p>
-          </div>
-          <div className="feature-card">
-            <div className="feature-card-icon">&#x1F500;</div>
-            <h3>3. Sync Your Way</h3>
-            <p>
-              Put your vault in Dropbox, Google Drive, or OneDrive and it syncs
-              automatically. Or add Git for version history and commit, push,
-              and branch from within the app.
-            </p>
-          </div>
-          <div className="feature-card">
-            <div className="feature-card-icon">&#x1F310;</div>
-            <h3>Works Offline</h3>
-            <p>
-              Once loaded, CommitPaper works fully offline as a Progressive Web
-              App. No internet needed for writing and organising.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* Tech stack */}
-      <section className="landing-section">
-        <h2>Tech Stack</h2>
-        <table className="tech-stack-table">
-          <thead>
-            <tr>
-              <th>Layer</th>
-              <th>Technology</th>
-              <th>Why</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>UI Framework</td>
-              <td>React 19</td>
-              <td>Component-driven, fast rendering</td>
-            </tr>
-            <tr>
-              <td>Editor</td>
-              <td>Milkdown/Crepe</td>
-              <td>ProseMirror-based WYSIWYG framework</td>
-            </tr>
-            <tr>
-              <td>Type Safety</td>
-              <td>TypeScript 5</td>
-              <td>Catch bugs before they ship</td>
-            </tr>
-            <tr>
-              <td>Build Tool</td>
-              <td>Vite 7</td>
-              <td>Instant HMR, fast builds</td>
-            </tr>
-            <tr>
-              <td>State</td>
-              <td>Zustand 5</td>
-              <td>Minimal, flexible state management</td>
-            </tr>
-            <tr>
-              <td>Graph</td>
-              <td>Cytoscape.js</td>
-              <td>Battle-tested graph visualisation</td>
-            </tr>
-            <tr>
-              <td>Math</td>
-              <td>KaTeX</td>
-              <td>Fast LaTeX rendering</td>
-            </tr>
-            <tr>
-              <td>Diagrams</td>
-              <td>Mermaid</td>
-              <td>Declarative diagrams from text</td>
-            </tr>
-            <tr>
-              <td>Search</td>
-              <td>MiniSearch</td>
-              <td>Client-side full-text search</td>
-            </tr>
-            <tr>
-              <td>Git</td>
-              <td>isomorphic-git</td>
-              <td>Full Git operations in the browser</td>
-            </tr>
-            <tr>
-              <td>File Access</td>
-              <td>File System Access API</td>
-              <td>Direct filesystem read/write in the browser</td>
-            </tr>
-          </tbody>
-        </table>
+        <Link to="/app" className="hero-btn-primary">
+          Open CommitPaper — It's Free
+        </Link>
+        <span className="cta-subtext">
+          No sign-up &middot; No install &middot; Works in Chrome &amp; Edge
+        </span>
       </section>
 
       {/* FAQ */}
       <section className="landing-section" id="faq">
-        <h2>FAQ</h2>
+        <h2>Frequently asked questions</h2>
         <div className="faq-list">
           <div className="faq-item">
-            <h4>Is this a replacement for Obsidian?</h4>
+            <h4>Is this free?</h4>
             <p>
-              It's inspired by Obsidian but takes a different approach.
-              CommitPaper works with any folder on your computer and optionally
-              integrates with Git for sync and version history. Where Obsidian
-              has a plugin ecosystem, CommitPaper has the features built in. If
-              you want a lightweight, local-first note app that works with plain
-              Markdown files, CommitPaper is for you.
-            </p>
-          </div>
-          <div className="faq-item">
-            <h4>Does it work with existing Obsidian vaults?</h4>
-            <p>
-              Yes. CommitPaper reads standard Markdown files and supports
-              callouts, frontmatter, and standard markdown links. Point it at
-              your existing vault folder.
+              Yes. CommitPaper is completely free to use. No subscriptions, no
+              paywalls, no strings attached.
             </p>
           </div>
           <div className="faq-item">
             <h4>What browsers are supported?</h4>
             <p>
-              CommitPaper requires Chrome 86+ or Edge 86+ for the File System
-              Access API. Firefox and Safari don't support this API yet.
+              Chrome 86+ and Edge 86+. Firefox and Safari don't yet support the
+              File System Access API that CommitPaper needs.
             </p>
-          </div>
-          <div className="faq-item">
-            <h4>Is it free?</h4>
-            <p>Yes. MIT licensed, free forever.</p>
           </div>
           <div className="faq-item">
             <h4>Where is my data stored?</h4>
             <p>
-              On your filesystem, in the folder you choose. CommitPaper doesn't
-              store data anywhere else. Nothing is uploaded. Nothing leaves your
-              browser.
+              On your computer, in the folder you choose. Nothing is uploaded
+              anywhere. Nothing leaves your browser.
             </p>
           </div>
           <div className="faq-item">
-            <h4>Can I use it offline?</h4>
+            <h4>Does it work with existing Obsidian folders?</h4>
             <p>
-              Absolutely. Once loaded, everything works offline as a PWA.
-              Writing, searching, and organising are fully local.
+              Yes. CommitPaper reads standard Markdown files and supports
+              callouts, frontmatter, and standard markdown links. Just point it
+              at your folder.
+            </p>
+          </div>
+          <div className="faq-item">
+            <h4>Can I sync across computers?</h4>
+            <p>
+              Yes — put your folder in Dropbox, Google Drive, or OneDrive and it
+              syncs automatically. Or use Git for version-controlled sync.
             </p>
           </div>
           <div className="faq-item">
             <h4>Do I need Git?</h4>
             <p>
-              No. CommitPaper works with any folder. For cross-device sync, you
-              can simply put your vault in Dropbox, Google Drive, or OneDrive.
-              Git is optional — but it gives you version history, branching, and
-              the ability to revert any note.
+              No. Git is entirely optional. But if you want version history,
+              branching, and the ability to revert any note, it's built right
+              in.
             </p>
           </div>
           <div className="faq-item">
-            <h4>Can I commit and push from CommitPaper?</h4>
+            <h4>Can I use it offline?</h4>
             <p>
-              Yes! CommitPaper includes full Git operations powered by
-              isomorphic-git. You can stage files, write commit messages,
-              commit, and push to your remote — all from within the app.
+              Absolutely. Once loaded, everything works offline as a Progressive
+              Web App.
             </p>
-          </div>
-        </div>
-      </section>
-
-      {/* Philosophy */}
-      <section className="landing-section">
-        <h2>Philosophy</h2>
-        <div className="value-grid">
-          <div className="value-item">
-            <div className="value-item-icon">&#x1F3E0;</div>
-            <h4>Local First</h4>
-            <p>
-              Your files live on your machine. You choose if and where to sync
-              them.
-            </p>
-          </div>
-          <div className="value-item">
-            <div className="value-item-icon">&#x1F4DD;</div>
-            <h4>Plain Text</h4>
-            <p>
-              Markdown is the format. No proprietary schemas, no binary blobs.
-            </p>
-          </div>
-          <div className="value-item">
-            <div className="value-item-icon">&#x1F500;</div>
-            <h4>Git Ready</h4>
-            <p>
-              Add Git for version history and sync — or don't. It's your choice.
-            </p>
-          </div>
-          <div className="value-item">
-            <div className="value-item-icon">&#x1F513;</div>
-            <h4>Open Source</h4>
-            <p>MIT licensed. Read the code, fork it, make it yours.</p>
           </div>
         </div>
       </section>
 
       {/* Footer */}
       <footer className="landing-footer">
-        <p>
-          CommitPaper — MIT Licensed —{" "}
-          <a
-            href="https://github.com/IainMcl/commitpaper"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            GitHub
-          </a>
-        </p>
+        <p>CommitPaper</p>
       </footer>
     </div>
   );

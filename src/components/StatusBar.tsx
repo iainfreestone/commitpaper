@@ -57,17 +57,17 @@ export function StatusBar() {
       <div className="status-bar-item vault-switcher">
         <span
           className="vault-name"
-          title="Switch vault"
+          title="Switch folder"
           onClick={handleSwitchVault}
           role="button"
           tabIndex={0}
         >
-          📂 {vault?.path ?? "No vault"}
+          📂 {vault?.path ?? "No folder"}
         </span>
         <button
           className="vault-close-btn"
           onClick={handleCloseVault}
-          title="Close vault"
+          title="Close folder"
         >
           ✕
         </button>

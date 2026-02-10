@@ -79,14 +79,14 @@ Output is in `dist/`. Serve with any static file server.
 
 ## How It Works
 
-CommitPaper runs entirely in the browser. When you click **Open Vault**, the browser's `showDirectoryPicker()` API lets you select any folder on your computer. CommitPaper then reads and writes `.md` files directly on your filesystem — no server, no uploads, nothing leaves your machine.
+CommitPaper runs entirely in the browser. When you click **Open Folder**, the browser's `showDirectoryPicker()` API lets you select any folder on your computer. CommitPaper then reads and writes `.md` files directly on your filesystem — no server, no uploads, nothing leaves your machine.
 
 - **File System Access API** handles all file operations directly in the browser
 - **MiniSearch** provides client-side full-text search
 - **Polling** (every 3s) detects external file changes
 - **isomorphic-git** provides full Git operations (stage, commit, push, branch) in-browser
 
-Your vault is just a folder. It doesn't need to be a Git repo — but if it is, you get full version control from within the app. If you stop using CommitPaper, your notes are plain Markdown files right where you left them.
+Your notes are just a folder. It doesn't need to be a Git repo — but if it is, you get full version control from within the app. If you stop using CommitPaper, your notes are plain Markdown files right where you left them.
 
 ---
 
@@ -160,7 +160,7 @@ commitpaper/
 
 ## Git Integration
 
-CommitPaper works with any folder — Git is not required. But if your vault is a Git repo, you get full version control from within the app:
+CommitPaper works with any folder — Git is not required. But if your folder is a Git repo, you get full version control from within the app:
 
 - **Branch name** — displayed in the sidebar and status bar
 - **Modified file count** — see how many files have changed at a glance
@@ -173,9 +173,3 @@ CommitPaper works with any folder — Git is not required. But if your vault is 
 - **Line-by-line diff** — see exactly what changed
 
 All powered by [isomorphic-git](https://isomorphic-git.org/), running entirely in the browser.
-
----
-
-## License
-
-MIT — free to use, modify, and distribute.

@@ -14,12 +14,16 @@ export function WelcomeScreen() {
   const [recentVaults, setRecentVaults] = useState<RecentVault[]>([]);
 
   useEffect(() => {
-    getRecentVaults().then(setRecentVaults).catch(() => {});
+    getRecentVaults()
+      .then(setRecentVaults)
+      .catch(() => {});
   }, []);
 
   const handleOpen = async () => {
     try {
-      const handle = await (window as any).showDirectoryPicker({ mode: "readwrite" });
+      const handle = await (window as any).showDirectoryPicker({
+        mode: "readwrite",
+      });
       setRootHandle(handle);
       openVault(handle.name);
     } catch (e: any) {
@@ -64,8 +68,14 @@ export function WelcomeScreen() {
 
       {recentVaults.length > 0 && (
         <div className="recent-vaults">
-          <h3 style={{ fontSize: "13px", color: "var(--text-muted)", marginBottom: "8px" }}>
-            Recent Vaults
+          <h3
+            style={{
+              fontSize: "13px",
+              color: "var(--text-muted)",
+              marginBottom: "8px",
+            }}
+          >
+            Recent Folders
           </h3>
           <ul style={{ listStyle: "none", padding: 0, margin: "0 0 16px 0" }}>
             {recentVaults.map((v) => (
@@ -89,12 +99,22 @@ export function WelcomeScreen() {
         onClick={handleOpen}
         disabled={isLoading || !isSupported}
       >
-        {isLoading ? "Opening..." : recentVaults.length > 0 ? "Open Different Vault" : "Open Vault"}
+        {isLoading
+          ? "Opening..."
+          : recentVaults.length > 0
+            ? "Open Different Folder"
+            : "Open Folder"}
       </button>
       <p style={{ fontSize: "12px", color: "var(--text-muted)" }}>
         Ctrl+P to open command palette
       </p>
-      <p style={{ fontSize: "11px", color: "var(--text-muted)", marginTop: "-12px" }}>
+      <p
+        style={{
+          fontSize: "11px",
+          color: "var(--text-muted)",
+          marginTop: "-12px",
+        }}
+      >
         Web version — Git operations require an external Git client
       </p>
     </div>

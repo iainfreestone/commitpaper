@@ -2,7 +2,7 @@
 
 ## Your notes. Your folder. Your rules.
 
-CommitPaper is a free, open-source web app for writing and organising your notes — right in your browser. No cloud accounts, no subscriptions, no proprietary formats. Just Markdown files in a folder you own. Sync across devices with Dropbox, Google Drive, OneDrive, or add Git for version history too.
+CommitPaper is a free web app for writing and organising your notes — right in your browser. No cloud accounts, no subscriptions, no proprietary formats. Just Markdown files in a folder you own. Sync across devices with Dropbox, Google Drive, OneDrive, or add Git for version history too.
 
 Think of it as **Obsidian meets your filesystem**, running right in your browser.
 
@@ -15,7 +15,7 @@ Most note-taking apps lock you into their ecosystem. Your notes live on someone 
 CommitPaper takes a different approach:
 
 - **Your notes are plain Markdown files.** Open them in any editor, on any device, forever.
-- **Your vault is just a folder.** Pick any folder on your computer. No special setup required.
+- **Your notes are just a folder.** Pick any folder on your computer. No special setup required.
 - **Git is optional but powerful.** Add Git for version history, cross-device sync via GitHub/GitLab, and the ability to revert any note to any point in time.
 - **Your workflow is local-first.** Everything runs on your machine. No internet required to write.
 
@@ -64,7 +64,7 @@ The **Backlinks** panel shows you every note that links to the one you're readin
 
 ### Visualise your knowledge
 
-The **Graph View** renders your entire vault as an interactive network:
+The **Graph View** renders all your notes as an interactive network:
 
 - Each note is a node. Each link is an edge.
 - Node size scales with how many notes link to it.
@@ -75,7 +75,7 @@ See the shape of your thinking at a glance.
 
 ### Full Git integration
 
-If your vault is a Git repo, CommitPaper gives you full version control directly in the browser — powered by isomorphic-git:
+If your folder is a Git repo, CommitPaper gives you full version control directly in the browser — powered by isomorphic-git:
 
 - **Stage & unstage files** — select exactly which changes to include in a commit.
 - **Commit** — write commit messages and commit directly from the UI.
@@ -86,7 +86,7 @@ If your vault is a Git repo, CommitPaper gives you full version control directly
 - **Line-by-line diff** — see exactly what changed in each file.
 - **Branch & modified count** — the current branch and number of modified files are always visible in the sidebar and status bar.
 
-Git is not required — CommitPaper works perfectly well with any regular folder. But if you want version history or cross-device sync, initialising a Git repo in your vault gives you both — and you can do it all from within the app.
+Git is not required — CommitPaper works perfectly well with any regular folder. But if you want version history or cross-device sync, initialising a Git repo in your folder gives you both — and you can do it all from within the app.
 
 ### Rich content
 
@@ -202,7 +202,7 @@ CommitPaper runs entirely in your browser using the **File System Access API**.
 
 **Offline:** CommitPaper is a Progressive Web App. Once loaded, it works fully offline.
 
-Your vault is just a folder on your filesystem. CommitPaper reads and writes plain `.md` files. Nothing is stored in a database. Nothing is uploaded anywhere. If you stop using CommitPaper, your notes are still right where you left them.
+Your notes are just a folder on your filesystem. CommitPaper reads and writes plain `.md` files. Nothing is stored in a database. Nothing is uploaded anywhere. If you stop using CommitPaper, your notes are still right where you left them.
 
 ---
 
@@ -228,9 +228,9 @@ npm run dev
 
 Opens at [http://localhost:5180](http://localhost:5180). Hot-reload is enabled.
 
-### 3. Open a vault
+### 3. Open a folder
 
-Click **Open Vault** and select any folder. Your browser will ask for read/write permission. If the folder is a Git repo, the Git panel shows your branch, modified files, and full commit/push controls.
+Click **Open Folder** and select any folder. Your browser will ask for read/write permission. If the folder is a Git repo, the Git panel shows your branch, modified files, and full commit/push controls.
 
 ### 4. Start writing
 
@@ -280,17 +280,17 @@ Produces a static site in `dist/`. Deploy to any web server.
 **Is this a replacement for Obsidian?**
 It's inspired by Obsidian but takes a different approach. CommitPaper works with any folder on your computer and integrates with Git for version history and sync — all from within the browser. Where Obsidian has a plugin ecosystem, CommitPaper has the features built in. If you want a lightweight, local-first note app that works with plain Markdown files, CommitPaper is for you.
 
-**Does it work with existing Obsidian vaults?**
-Yes. CommitPaper reads standard Markdown files and supports callouts, frontmatter, and standard markdown links. Point it at your existing vault folder.
+**Does it work with existing Obsidian folders?**
+Yes. CommitPaper reads standard Markdown files and supports callouts, frontmatter, and standard markdown links. Point it at your existing folder.
 
 **Do I need Git?**
-No. CommitPaper works with any folder — Git is entirely optional. But if you want version history or to sync your notes across computers, initialising a Git repo in your vault is a great way to get both.
+No. CommitPaper works with any folder — Git is entirely optional. But if you want version history or to sync your notes across computers, initialising a Git repo in your folder is a great way to get both.
 
 **What browsers are supported?**
 Chrome 86+ and Edge 86+ (requires the File System Access API). Firefox and Safari are not currently supported.
 
 **Is it free?**
-Yes. MIT licensed, free forever.
+Yes. Completely free, forever.
 
 **Where is my data stored?**
 On your filesystem, in the folder you choose. CommitPaper doesn't store data anywhere else. Nothing is uploaded. Nothing leaves your browser.

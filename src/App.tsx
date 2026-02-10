@@ -8,6 +8,7 @@ import { EditorArea } from "./components/Editor/EditorArea";
 import { RightPanel } from "./components/RightPanel/RightPanel";
 import { StatusBar } from "./components/StatusBar";
 import { CommandPalette } from "./components/CommandPalette";
+import { KeyboardShortcuts } from "./components/KeyboardShortcuts";
 import {
   resolveWikilink,
   startFileWatching,
@@ -24,6 +25,7 @@ export default function App() {
   const saveFile = useEditorStore((s) => s.saveFile);
   const [showCommandPalette, setShowCommandPalette] = React.useState(false);
   const [showRightPanel, setShowRightPanel] = React.useState(true);
+  const [showShortcuts, setShowShortcuts] = React.useState(false);
   const [restoringVault, setRestoringVault] = useState(true);
 
   // Try to auto-restore the last opened vault on mount
@@ -154,8 +156,13 @@ export default function App() {
         e.preventDefault();
         useEditorStore.getState().toggleEditorMode();
       }
+      if (mod && e.key === "/") {
+        e.preventDefault();
+        setShowShortcuts((v) => !v);
+      }
       if (e.key === "Escape") {
         setShowCommandPalette(false);
+        setShowShortcuts(false);
       }
     };
     window.addEventListener("keydown", handleKeyDown);
@@ -215,6 +222,10 @@ export default function App() {
       {showCommandPalette && (
         <CommandPalette onClose={() => setShowCommandPalette(false)} />
       )}
+      <KeyboardShortcuts
+        open={showShortcuts}
+        onClose={() => setShowShortcuts(false)}
+      />
     </div>
   );
 }
