@@ -44,6 +44,7 @@ export default function LandingPage() {
         <div className="hero-badges">
           <span>&#x1F4DD; Plain Markdown</span>
           <span>&#x1F4C2; Any Folder</span>
+          <span>&#x2601;&#xFE0F; Dropbox / Drive / OneDrive</span>
           <span>&#x1F500; Git Ready</span>
           <span>&#x1F512; Local First</span>
           <span>&#x26A1; Fast &amp; Light</span>
@@ -78,10 +79,11 @@ export default function LandingPage() {
           </div>
           <div className="value-item">
             <div className="value-item-icon">&#x1F500;</div>
-            <h4>Git Ready</h4>
+            <h4>Sync Your Way</h4>
             <p>
-              Add Git for version history and cross-device sync via GitHub,
-              GitLab, or your own server.
+              Use Git for version history, or just put your vault in Dropbox,
+              Google Drive, or OneDrive — it syncs automatically across
+              computers.
             </p>
           </div>
           <div className="value-item">
@@ -113,18 +115,15 @@ export default function LandingPage() {
               <td>
                 <strong>Sidebar</strong> (left)
               </td>
-              <td>
-                Browse files, search notes, manage Git, view tags, open daily
-                notes, insert templates
-              </td>
+              <td>Browse files, search notes, manage Git</td>
             </tr>
             <tr>
               <td>
                 <strong>Editor</strong> (centre)
               </td>
               <td>
-                Write in Markdown with live inline rendering — or switch to a
-                full preview
+                Write in Markdown with live inline rendering — or toggle to raw
+                mode with Ctrl+E
               </td>
             </tr>
             <tr>
@@ -152,19 +151,19 @@ export default function LandingPage() {
             <div className="feature-card-icon">&#x270D;&#xFE0F;</div>
             <h3>Write Naturally</h3>
             <p>
-              The editor understands Markdown deeply. Headings render at their
-              actual size, bold appears bold, code blocks get syntax-coloured
-              backgrounds, and images render inline. Just click any line to edit
-              the raw syntax.
+              The Milkdown/Crepe editor renders Markdown as you type. Headings
+              appear at their actual size, bold appears bold, and code blocks
+              get syntax-coloured backgrounds. Press Ctrl+E to toggle between
+              rich WYSIWYG and raw text mode.
             </p>
           </div>
           <div className="feature-card">
             <div className="feature-card-icon">&#x1F517;</div>
             <h3>Link Your Thinking</h3>
             <p>
-              Connect ideas with standard markdown links. A built-in note picker
-              shows every note in your vault. Click to navigate. The Backlinks
-              panel traces connections in both directions.
+              Connect ideas with standard markdown links via the built-in note
+              picker. Click any link to navigate. The Backlinks panel traces
+              connections in both directions.
             </p>
           </div>
           <div className="feature-card">
@@ -178,29 +177,29 @@ export default function LandingPage() {
           </div>
           <div className="feature-card">
             <div className="feature-card-icon">&#x1F500;</div>
-            <h3>Git Integration (Optional)</h3>
+            <h3>Full Git Integration</h3>
             <p>
-              If your vault is a Git repo, see your branch and modified files at
-              a glance. Use your terminal to commit, push, and sync across
-              devices. Not using Git? Everything else works just the same.
+              Stage, commit, push, branch, and view history — all from within
+              the app, powered by isomorphic-git. See your branch, modified
+              files, diffs, and full commit log. Git is optional — everything
+              else works without it.
             </p>
           </div>
           <div className="feature-card">
-            <div className="feature-card-icon">&#x1F4C5;</div>
-            <h3>Daily Notes</h3>
+            <div className="feature-card-icon">&#x1F3A8;</div>
+            <h3>8 Themes</h3>
             <p>
-              Press Alt+D to open today's note. Auto-created with a dated
-              template including sections for tasks, notes, and journaling. The
-              sidebar shows your last seven days.
+              Choose from 8 built-in themes — 4 dark and 4 light, including
+              Catppuccin, Nord, Frame, and Crepe. Switch instantly from the
+              status bar.
             </p>
           </div>
           <div className="feature-card">
             <div className="feature-card-icon">&#x1F4CB;</div>
-            <h3>Templates</h3>
+            <h3>Properties Editor</h3>
             <p>
-              Create templates with variables like {"{{date}}"}, {"{{title}}"},{" "}
-              {"{{time}}"}. Insert at cursor or create a new note from a
-              template with one click.
+              Visual key-value editor for YAML frontmatter. Add, edit, and
+              remove metadata without touching raw YAML.
             </p>
           </div>
           <div className="feature-card">
@@ -254,9 +253,9 @@ export default function LandingPage() {
             </tr>
             <tr>
               <td>
-                <kbd>Alt+D</kbd>
+                <kbd>Ctrl+E</kbd>
               </td>
-              <td>Today's daily note</td>
+              <td>Toggle Rich/Raw</td>
             </tr>
             <tr>
               <td>
@@ -336,8 +335,8 @@ export default function LandingPage() {
             <div className="feature-card-icon">&#x1F4C2;</div>
             <h3>1. Open a Folder</h3>
             <p>
-              Click "Open Vault" and select any folder on your machine. Your
-              browser asks for permission once per session.
+              Click "Open Vault" and select any folder. Your browser asks for
+              permission once per session.
             </p>
           </div>
           <div className="feature-card">
@@ -350,11 +349,11 @@ export default function LandingPage() {
           </div>
           <div className="feature-card">
             <div className="feature-card-icon">&#x1F500;</div>
-            <h3>3. Add Git (Optional)</h3>
+            <h3>3. Sync Your Way</h3>
             <p>
-              Want version history and cross-device sync? Initialise a Git repo
-              in your vault. CommitPaper will show your branch and modified
-              files. Use your terminal to commit and push.
+              Put your vault in Dropbox, Google Drive, or OneDrive and it syncs
+              automatically. Or add Git for version history and commit, push,
+              and branch from within the app.
             </p>
           </div>
           <div className="feature-card">
@@ -387,8 +386,8 @@ export default function LandingPage() {
             </tr>
             <tr>
               <td>Editor</td>
-              <td>CodeMirror 6</td>
-              <td>Extensible, performant, modern editor toolkit</td>
+              <td>Milkdown/Crepe</td>
+              <td>ProseMirror-based WYSIWYG framework</td>
             </tr>
             <tr>
               <td>Type Safety</td>
@@ -426,6 +425,11 @@ export default function LandingPage() {
               <td>Client-side full-text search</td>
             </tr>
             <tr>
+              <td>Git</td>
+              <td>isomorphic-git</td>
+              <td>Full Git operations in the browser</td>
+            </tr>
+            <tr>
               <td>File Access</td>
               <td>File System Access API</td>
               <td>Direct filesystem read/write in the browser</td>
@@ -453,8 +457,8 @@ export default function LandingPage() {
             <h4>Does it work with existing Obsidian vaults?</h4>
             <p>
               Yes. CommitPaper reads standard Markdown files and supports
-              Obsidian-flavoured syntax including callouts, frontmatter, and
-              standard markdown links. Point it at your existing vault folder.
+              callouts, frontmatter, and standard markdown links. Point it at
+              your existing vault folder.
             </p>
           </div>
           <div className="faq-item">
@@ -486,18 +490,18 @@ export default function LandingPage() {
           <div className="faq-item">
             <h4>Do I need Git?</h4>
             <p>
-              No. CommitPaper works with any folder. Git is entirely optional —
-              but if you want version history or to sync notes across computers,
-              initialising a Git repo is a great way to get both.
+              No. CommitPaper works with any folder. For cross-device sync, you
+              can simply put your vault in Dropbox, Google Drive, or OneDrive.
+              Git is optional — but it gives you version history, branching, and
+              the ability to revert any note.
             </p>
           </div>
           <div className="faq-item">
-            <h4>Can I commit and push from the web version?</h4>
+            <h4>Can I commit and push from CommitPaper?</h4>
             <p>
-              Not yet — browsers can't run Git operations directly. If your
-              vault is a Git repo, the web version shows your branch and
-              modified files, but you'll need a terminal or desktop Git client
-              for commits, pushes, and pulls.
+              Yes! CommitPaper includes full Git operations powered by
+              isomorphic-git. You can stage files, write commit messages,
+              commit, and push to your remote — all from within the app.
             </p>
           </div>
         </div>
