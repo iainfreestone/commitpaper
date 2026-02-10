@@ -2,6 +2,13 @@ import { create } from "zustand";
 import * as api from "../lib/api";
 import { getSettings, updateSettings } from "../lib/settings";
 import type { VaultSettings } from "../lib/settings";
+import {
+  trackNoteOpened,
+  trackEditorModeToggled,
+  trackEditorWidthChanged,
+  trackFontSizeChanged,
+  trackLineNumbersToggled,
+} from "../lib/analytics";
 
 export type EditorMode = "rich" | "raw";
 export type EditorWidth = "readable" | "full";
@@ -214,6 +221,8 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
 
   openFile: async (path: string) => {
     try {
+      trackNoteOpened();
+
       // Save the current file before opening a new one
       const { activeTabPath, isDirty } = get();
       if (activeTabPath && isDirty) {
@@ -511,24 +520,29 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
       // Grab fresh markdown from Milkdown before switching away
       const freshContent = getFreshContent();
       set({ editorMode: "raw", content: freshContent });
+      trackEditorModeToggled("raw");
     } else {
       // Switching back to rich — content in store is already up-to-date
       set({ editorMode: "rich" });
+      trackEditorModeToggled("rich");
     }
   },
 
   setEditorWidth: (width: EditorWidth) => {
     updateSettings({ editorWidth: width });
     set({ editorWidth: width });
+    trackEditorWidthChanged(width);
   },
 
   setFontSize: (size: number) => {
     updateSettings({ fontSize: size });
     set({ fontSize: size });
+    trackFontSizeChanged(size);
   },
 
   setLineNumbers: (on: boolean) => {
     updateSettings({ lineNumbers: on });
     set({ lineNumbers: on });
+    trackLineNumbersToggled(on);
   },
 }));

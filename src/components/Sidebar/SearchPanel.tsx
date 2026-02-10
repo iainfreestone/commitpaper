@@ -2,6 +2,7 @@ import React, { useState, useCallback } from "react";
 import { searchNotes } from "../../lib/api";
 import { useEditorStore } from "../../stores/editorStore";
 import type { SearchResult } from "../../lib/api";
+import { trackSearchUsed } from "../../lib/analytics";
 
 export function SearchPanel() {
   const [query, setQuery] = useState("");
@@ -17,6 +18,7 @@ export function SearchPanel() {
     try {
       const res = await searchNotes(q);
       setResults(res);
+      trackSearchUsed(res.length);
     } catch (e) {
       console.error("Search failed:", e);
     }

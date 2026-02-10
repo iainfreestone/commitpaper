@@ -7,6 +7,7 @@ import {
   clearLegacyLocalStorage,
 } from "../lib/settings";
 import { useEditorStore } from "./editorStore";
+import { trackVaultOpened, trackVaultClosed } from "../lib/analytics";
 
 interface VaultStore {
   vault: VaultConfig | null;
@@ -40,6 +41,8 @@ export const useVaultStore = create<VaultStore>((set, get) => ({
 
       set({ vault, fileTree, isLoading: false });
 
+      trackVaultOpened();
+
       // Dispatch event so other stores can apply loaded settings
       window.dispatchEvent(
         new CustomEvent("vault-settings-loaded", { detail: settings }),
@@ -54,6 +57,7 @@ export const useVaultStore = create<VaultStore>((set, get) => ({
 
   closeVault: () => {
     api.stopFileWatching();
+    trackVaultClosed();
     set({ vault: null, fileTree: [], error: null });
   },
 

@@ -3,6 +3,7 @@ import cytoscape from "cytoscape";
 import { useEditorStore } from "../../stores/editorStore";
 import { getGraphData, getLocalGraph } from "../../lib/api";
 import type { GraphData } from "../../lib/api";
+import { trackGraphViewed } from "../../lib/analytics";
 
 export function GraphView() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -17,6 +18,7 @@ export function GraphView() {
 
   const loadGraph = async () => {
     try {
+      trackGraphViewed(mode);
       let data: GraphData;
       if (mode === "local" && activeTabPath) {
         data = await getLocalGraph(activeTabPath, 2);

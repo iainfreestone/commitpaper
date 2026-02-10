@@ -11,6 +11,12 @@ import {
 import { getSettings, updateSettings } from "../../lib/settings";
 import { ContextMenu, ContextMenuItem } from "../ContextMenu";
 import type { FileTreeNode } from "../../lib/api";
+import {
+  trackNoteCreated,
+  trackFolderCreated,
+  trackNoteDeleted,
+  trackNoteRenamed,
+} from "../../lib/analytics";
 
 function useStarred() {
   const [starred, setStarred] = useState<string[]>(() => {
@@ -90,6 +96,7 @@ export function FileTree() {
       if (createType === "folder") {
         const folderPath = newFileName.trim();
         await createFolder(folderPath);
+        trackFolderCreated();
         const parts = folderPath.split("/");
         let accumulated = "";
         for (const part of parts) {
@@ -101,6 +108,7 @@ export function FileTree() {
           ? newFileName
           : `${newFileName}.md`;
         await createNote(path);
+        trackNoteCreated();
         openFile(path);
       }
       await refreshFileTree();
@@ -127,6 +135,7 @@ export function FileTree() {
         ? oldPath.substring(0, oldPath.lastIndexOf("/") + 1)
         : "";
       await renameFile(oldPath, dir + renameValue);
+      trackNoteRenamed();
       await refreshFileTree();
     } catch (e) {
       console.error("Failed to rename:", e);
@@ -142,6 +151,7 @@ export function FileTree() {
     if (!confirmed) return;
     try {
       await deleteFile(path);
+      trackNoteDeleted();
       await refreshFileTree();
     } catch (e) {
       console.error("Failed to delete:", e);

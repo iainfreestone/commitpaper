@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { getSettings, updateSettings } from "../lib/settings";
+import { trackThemeChanged } from "../lib/analytics";
 
 export type ThemeId =
   | "catppuccin-mocha"
@@ -58,6 +59,7 @@ export const useThemeStore = create<ThemeStore>((set) => ({
   setTheme: (theme: ThemeId) => {
     applyThemeToDOM(theme);
     updateSettings({ theme });
+    trackThemeChanged(theme);
     set({ theme });
   },
 }));

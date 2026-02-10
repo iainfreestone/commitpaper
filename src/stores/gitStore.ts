@@ -2,6 +2,13 @@ import { create } from "zustand";
 import * as api from "../lib/api";
 import type { FileStatus, BranchInfo, CommitInfo } from "../lib/api";
 import { getAuthor, setAuthorConfig } from "../lib/git";
+import {
+  trackGitCommit,
+  trackGitPush,
+  trackGitBranchCreated,
+  trackGitBranchSwitched,
+  trackGitRepoInitialised,
+} from "../lib/analytics";
 
 interface GitStore {
   // State
@@ -137,6 +144,7 @@ export const useGitStore = create<GitStore>((set, get) => ({
     try {
       set({ isLoading: true });
       const sha = await api.gitCommit(commitMessage.trim());
+      trackGitCommit();
       set({
         commitMessage: "",
         gitSuccess: `Committed: ${sha.substring(0, 7)}`,
@@ -160,6 +168,7 @@ export const useGitStore = create<GitStore>((set, get) => ({
       set({ isLoading: true, gitWarning: null });
       await api.gitStageAll();
       const sha = await api.gitCommit(autoMsg);
+      trackGitCommit();
       set({
         commitMessage: "",
         gitSuccess: `Committed: ${sha.substring(0, 7)}`,
@@ -178,6 +187,7 @@ export const useGitStore = create<GitStore>((set, get) => ({
       set({ isLoading: true, gitWarning: null });
       await quickCommit(message);
       await api.gitPush();
+      trackGitPush();
       set({
         gitSuccess:
           get().gitSuccess?.replace("Committed", "Committed & pushed") ||
@@ -202,6 +212,7 @@ export const useGitStore = create<GitStore>((set, get) => ({
   createBranch: async (name: string) => {
     try {
       await api.gitCreateBranch(name);
+      trackGitBranchCreated();
       await get().refreshBranches();
       set({ gitSuccess: `Branch '${name}' created.` });
     } catch (e) {
@@ -213,6 +224,7 @@ export const useGitStore = create<GitStore>((set, get) => ({
     try {
       set({ isLoading: true });
       await api.gitCheckoutBranch(name);
+      trackGitBranchSwitched();
       await get().refreshAll();
       set({ gitSuccess: `Switched to branch '${name}'.` });
     } catch (e) {
@@ -226,6 +238,7 @@ export const useGitStore = create<GitStore>((set, get) => ({
     try {
       set({ isLoading: true });
       await api.initVaultRepo();
+      trackGitRepoInitialised();
       await get().refreshAll();
       set({ gitSuccess: "Git repository initialized." });
     } catch (e) {
